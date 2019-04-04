@@ -23,6 +23,9 @@
         </activity>
 
         <activity android:name=".SecondActivity"/>
+        <activity
+                android:name=".GoogleSignInActivity"
+                android:label="@string/label_google_sign_in" />
     </application>
 
 </manifest>

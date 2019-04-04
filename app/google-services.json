@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "124948762900",
+    "firebase_url": "https://nugasam-e012c.firebaseio.com",
+    "project_id": "nugasam-e012c",
+    "storage_bucket": "nugasam-e012c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:124948762900:android:4c9a3412c4c78869",
+        "android_client_info": {
+          "package_name": "com.moon.nugasam"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "124948762900-q30mttu76ha9u8kr7vd47ourj3jsi27q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.moon.nugasam",
+            "certificate_hash": "ab2e547f57cbb4215b27ee18d118f08d3779f506"
+          }
+        },
+        {
+          "client_id": "124948762900-n4d7i3274dl5r2sgot1maparotb2n29g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD5u4sQZcYcDVc3NWLHGpEivG9abcstdUw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "124948762900-n4d7i3274dl5r2sgot1maparotb2n29g.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
