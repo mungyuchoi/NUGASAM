@@ -15,6 +15,9 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        renderscriptTargetApi 19
+        renderscriptSupportModeEnabled true
     }
     buildTypes {
         release {
@@ -37,6 +40,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-database:16.0.1'
     implementation 'com.google.android.gms:play-services-auth:16.0.0'
     implementation 'com.firebaseui:firebase-ui-auth:4.1.0'
+
+    implementation 'com.kongzue.dialog:dialog:2.4.8'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'

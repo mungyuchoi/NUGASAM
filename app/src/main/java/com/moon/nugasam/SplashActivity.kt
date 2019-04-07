@@ -1,5 +1,6 @@
 package com.moon.nugasam
 
+import android.content.DialogInterface
 import android.support.v7.app.AppCompatActivity
 import android.content.Intent
 import android.os.Bundle
@@ -13,7 +14,13 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.kongzue.dialog.listener.InputDialogOkButtonClickListener
+import com.kongzue.dialog.v2.InputDialog
 import kotlinx.android.synthetic.main.activity_google.*
+import android.R.id.edit
+import android.content.Context
+import android.content.SharedPreferences
+
 
 class SplashActivity : AppCompatActivity() {
 
@@ -34,11 +41,12 @@ class SplashActivity : AppCompatActivity() {
         mAuth = FirebaseAuth.getInstance()
         val currentUser = mAuth.currentUser
 
-        Log.d(TAG, "currentUser: $currentUser")
+        Log.d(TAG, "currentUser: $currentUser, image: ${currentUser?.photoUrl}, name: ${currentUser?.displayName} ")
         if (currentUser == null) {
             signIn()
         } else {
             startMainActivity()
+
         }
     }
 
@@ -71,8 +79,30 @@ class SplashActivity : AppCompatActivity() {
                 if (task.isSuccessful) {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "signInWithCredential:success")
-                    val user = mAuth.currentUser
-                    startMainActivity()
+
+                    InputDialog.build(
+                        this@SplashActivity,
+                        "이름을 입력해주세요.", "채팅방에서 사용할 이름을 입력해주세요", "완료",
+                        InputDialogOkButtonClickListener { dialog, inputText ->
+                            dialog.dismiss()
+                            val pref = applicationContext.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+                            val editor = pref.edit()
+                            editor.putString("name", inputText)
+                            editor.commit()
+
+                            Log.d(TAG, "name: $inputText")
+                            startMainActivity()
+
+                            // TODO 이때 DB에 inputText이름으로 0값으로 새롭게 추가한다!
+
+                        }, "취소", DialogInterface.OnClickListener { dialog, which ->
+                            dialog.dismiss()
+                            finish()
+                        }).apply {
+                        setDialogStyle(1)
+                        setDefaultInputHint(mAuth.currentUser?.displayName)
+                        showDialog()
+                    }
                 } else {
                     // If sign in fails, display a message to the user.
                     Log.w(TAG, "signInWithCredential:failure", task.exception)
@@ -87,13 +117,14 @@ class SplashActivity : AppCompatActivity() {
         startActivityForResult(signInIntent, RC_SIGN_IN)
     }
 
-    private fun startMainActivity(){
+    private fun startMainActivity() {
         Handler().postDelayed({
             val mySuperIntent = Intent(this@SplashActivity, MainActivity::class.java)
             startActivity(mySuperIntent)
             finish()
         }, SPLASH_TIME)
     }
+
     companion object {
         private val TAG = "SplashActivity"
         private val RC_SIGN_IN = 9001

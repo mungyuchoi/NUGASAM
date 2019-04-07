@@ -92,4 +92,6 @@
 
     <string name="loading">Loading…</string>
     <string name="signed_out">Signed Out</string>
+
+    <string name="done">Done</string>
 </resources>
