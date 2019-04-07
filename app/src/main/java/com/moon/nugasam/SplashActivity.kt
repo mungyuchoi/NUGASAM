@@ -88,6 +88,7 @@ class SplashActivity : AppCompatActivity() {
                             val pref = applicationContext.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
                             val editor = pref.edit()
                             editor.putString("name", inputText)
+                            editor.putString("image", mAuth.currentUser?.photoUrl.toString())
                             editor.commit()
 
                             Log.d(TAG, "name: $inputText")
