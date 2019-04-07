@@ -26,6 +26,9 @@ import java.util.HashMap
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
     AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
 
+
+
+
     private var arrayAdapter: ArrayAdapter<String>? = null
     private var arrayIndex = ArrayList<String>()
     private var arrayData = ArrayList<String>()
