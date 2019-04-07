@@ -3,9 +3,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
-import android.graphics.Color;
-import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -29,7 +26,6 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class SecondActivity extends AppCompatActivity  implements View.OnClickListener{
@@ -50,9 +46,8 @@ public class SecondActivity extends AppCompatActivity  implements View.OnClickLi
     TextView text_ID;
     TextView text_Name;
     TextView text_Age;
-    TextView text_Gender;
-    CheckBox check_Man;
-    CheckBox check_Woman;
+    //CheckBox check_Man;
+   // CheckBox check_Woman;
     CheckBox check_ID;
     CheckBox check_Name;
     CheckBox check_Age;
@@ -60,7 +55,6 @@ public class SecondActivity extends AppCompatActivity  implements View.OnClickLi
     String ID;
     String name;
     long age;
-    String gender = "";
     String sort = "id";
 
     ArrayAdapter<String> arrayAdapter;
@@ -85,11 +79,6 @@ public class SecondActivity extends AppCompatActivity  implements View.OnClickLi
         text_ID = (TextView) findViewById(R.id.text_id);
         text_Name = (TextView) findViewById(R.id.text_name);
         text_Age = (TextView) findViewById(R.id.text_age);
-        text_Gender= (TextView) findViewById(R.id.text_gender);
-        check_Man = (CheckBox) findViewById(R.id.check_man);
-        check_Man.setOnClickListener(this);
-        check_Woman = (CheckBox) findViewById(R.id.check_woman);
-        check_Woman.setOnClickListener(this);
         check_ID = (CheckBox) findViewById(R.id.check_userid);
         check_ID.setOnClickListener(this);
         check_Name = (CheckBox) findViewById(R.id.check_name);
@@ -114,8 +103,8 @@ public class SecondActivity extends AppCompatActivity  implements View.OnClickLi
         edit_ID.setText("");
         edit_Name.setText("");
         edit_Age.setText("");
-        check_Man.setChecked(false);
-        check_Woman.setChecked(false);
+//        check_Man.setChecked(false);
+//        check_Woman.setChecked(false);
         btn_Insert.setEnabled(true);
         btn_Update.setEnabled(false);
     }
@@ -130,13 +119,6 @@ public class SecondActivity extends AppCompatActivity  implements View.OnClickLi
             edit_ID.setText(tempData[0].trim());
             edit_Name.setText(tempData[1].trim());
             edit_Age.setText(tempData[2].trim());
-            if(tempData[3].trim().equals("Man")){
-                check_Man.setChecked(true);
-                gender = "Man";
-            }else{
-                check_Woman.setChecked(true);
-                gender = "Woman";
-            }
             edit_ID.setEnabled(false);
             btn_Insert.setEnabled(false);
             btn_Update.setEnabled(true);
@@ -187,7 +169,7 @@ public class SecondActivity extends AppCompatActivity  implements View.OnClickLi
         Map<String, Object> childUpdates = new HashMap<>();
         Map<String, Object> postValues = null;
         if(add){
-            FirebasePost post = new FirebasePost(ID, name, age, gender);
+            FirebasePost post = new FirebasePost(ID, name, (int) age);
             postValues = post.toMap();
         }
         childUpdates.put("/id_list/" + ID, postValues);
@@ -204,12 +186,12 @@ public class SecondActivity extends AppCompatActivity  implements View.OnClickLi
                 for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
                     String key = postSnapshot.getKey();
                     FirebasePost get = postSnapshot.getValue(FirebasePost.class);
-                    String[] info = {get.id, get.name, String.valueOf(get.age), get.gender};
-                    String Result = setTextLength(info[0],10) + setTextLength(info[1],10) + setTextLength(info[2],10) + setTextLength(info[3],10);
+                    String[] info = {get.id, get.name, String.valueOf(get.nuga),};
+                    String Result = setTextLength(info[0],10) + setTextLength(info[1],10) + setTextLength(info[2],10);
                     arrayData.add(Result);
                     arrayIndex.add(key);
                     Log.d("getFirebaseDatabase", "key: " + key);
-                    Log.d("getFirebaseDatabase", "info: " + info[0] + info[1] + info[2] + info[3]);
+                    Log.d("getFirebaseDatabase", "info: " + info[0] + info[1] + info[2]);
                 }
                 arrayAdapter.clear();
                 arrayAdapter.addAll(arrayData);
@@ -268,17 +250,6 @@ public class SecondActivity extends AppCompatActivity  implements View.OnClickLi
             case R.id.btn_select:
                 getFirebaseDatabase();
                 break;
-
-            case R.id.check_man:
-                check_Woman.setChecked(false);
-                gender = "Man";
-                break;
-
-            case R.id.check_woman:
-                check_Man.setChecked(false);
-                gender = "Woman";
-                break;
-
             case R.id.check_userid:
                 check_Name.setChecked(false);
                 check_Age.setChecked(false);
