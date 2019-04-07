@@ -1,11 +1,11 @@
 package com.moon.nugasam
 
 import android.os.Bundle
-import android.support.design.widget.Snackbar
-import android.support.design.widget.NavigationView
-import android.support.v4.view.GravityCompat
-import android.support.v7.app.ActionBarDrawerToggle
-import android.support.v7.app.AppCompatActivity
+import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.navigation.NavigationView
+import androidx.core.view.GravityCompat
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import kotlinx.android.synthetic.main.activity_main.*
@@ -26,9 +26,6 @@ import java.util.HashMap
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
     AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
 
-
-
-
     private var arrayAdapter: ArrayAdapter<String>? = null
     private var arrayIndex = ArrayList<String>()
     private var arrayData = ArrayList<String>()
@@ -48,11 +45,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        val toggle = ActionBarDrawerToggle(
-            this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close
-        )
-        drawer_layout.addDrawerListener(toggle)
-        toggle.syncState()
+//        val toggle = ActionBarDrawerToggle(
+//            this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close
+//        )
+//        drawer_layout.addDrawerListener(toggle)
+//        toggle.syncState()
 
         nav_view.setNavigationItemSelectedListener(this)
 

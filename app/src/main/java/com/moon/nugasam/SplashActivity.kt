@@ -1,11 +1,11 @@
 package com.moon.nugasam
 
 import android.content.DialogInterface
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
-import android.support.design.widget.Snackbar
+import com.google.android.material.snackbar.Snackbar
 import android.util.Log
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -24,7 +24,7 @@ import android.content.SharedPreferences
 
 class SplashActivity : AppCompatActivity() {
 
-    var SPLASH_TIME = 1000L //This is 1 seconds
+    var SPLASH_TIME = 3000L //This is 1 seconds
     private lateinit var mAuth: FirebaseAuth
     private lateinit var mGoogleSignInClient: GoogleSignInClient
 
