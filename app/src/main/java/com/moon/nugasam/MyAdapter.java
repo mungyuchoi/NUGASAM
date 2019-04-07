@@ -1,8 +1,6 @@
 package com.moon.nugasam;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,7 +31,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
             mImageView = v.findViewById(R.id.thumbnail);
             mView = v;
             v.setOnLongClickListener(this);
-            mImageView.setOnClickListener(this);
+            v.setOnClickListener(this);
         }
 
         @Override

@@ -145,6 +145,18 @@ class MainActivity : AppCompatActivity(){
                 )
                 return true
             }
+            android.R.id.home, R.id.item_cancel ->{
+                clearActionMode()
+                mAdapter?.notifyDataSetChanged()
+                return true
+            }
+            R.id.item_done ->{
+                Log.d("MQ!", "done clicked")
+                clearActionMode()
+                mAdapter?.notifyDataSetChanged()
+                // TODO 선택한 값을 반영해야합니다.
+                return true
+            }
             else -> return super.onOptionsItemSelected(item)
         }
     }
