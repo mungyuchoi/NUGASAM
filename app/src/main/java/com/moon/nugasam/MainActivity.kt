@@ -1,81 +1,64 @@
 package com.moon.nugasam
 
+import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.content.Intent
 import android.util.Log
-import android.widget.ArrayAdapter
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.*
 import java.util.ArrayList
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.ValueEventListener
+import com.moon.nugasam.data.User
+import java.util.HashMap
 
 
-class MainActivity : AppCompatActivity(){
+class MainActivity : AppCompatActivity() {
 
     private var toolbar: Toolbar? = null
-    private var mRecyclerView: RecyclerView? = null
-    private var mAdapter: RecyclerView.Adapter<*>? = null
-    private var mLayoutManager: RecyclerView.LayoutManager? = null
-    private var mData = ArrayList<FirebasePost>()
+    private var recyclerView: RecyclerView? = null
+    private var myAdapter: MyAdapter? = null
+    private var dataIndex = ArrayList<String>()
+    private var datas = ArrayList<User>()
+    private var me : User? = null
 
     // action mode
     var isInActionMode = false
-    var selectionList = ArrayList<FirebasePost>()
-
-
-    private var arrayAdapter: ArrayAdapter<String>? = null
-    private var arrayIndex = ArrayList<String>()
-    private var arrayData = ArrayList<String>()
-    private var sort = "id"
-    private var mPostReference: DatabaseReference? = null
-
-    private var ID: String? = null
-    private var name: String? = null
-    private var nuga: Int = 0
-
-    private var cID: String? = "9"
-    private var cName: String? = "최문규"
-    private var cNuga: Int = 0
+    var selectionList = ArrayList<User>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        toolbar = findViewById<Toolbar>(R.id.toolbar)?.apply{
+        FirebaseApp.initializeApp(this)
+        toolbar = findViewById<Toolbar>(R.id.toolbar)?.apply {
             setTitle(R.string.app_name)
         }
         setSupportActionBar(toolbar)
 
         // recyclerview
-        mRecyclerView = findViewById<RecyclerView>(R.id.recyclerView)?.apply {
+        recyclerView = findViewById<RecyclerView>(R.id.recyclerView)?.apply {
             setHasFixedSize(true)
-            mLayoutManager = LinearLayoutManager(this@MainActivity)
-            setLayoutManager(mLayoutManager)
+            setLayoutManager(LinearLayoutManager(this@MainActivity))
 
-            mData.add(FirebasePost("1", "choimungyu", 3))
-            mData.add(FirebasePost("2", "dadf", 2))
-            mData.add(FirebasePost("3", "sdfsdf", 3))
-            mData.add(FirebasePost("4", "sdfsf", 3))
-            mData.add(FirebasePost("5", "choimsdfsdfsdfungyu", 3))
+            Log.d("MQ!", "onCreate datas$datas")
 
-            mAdapter = MyAdapter(this@MainActivity, mData)
-            setAdapter(mAdapter)
-
-            // TODO data 로드해서 넣어야 합니다.
+            myAdapter = MyAdapter(this@MainActivity, datas.clone() as ArrayList<User>?)
+            setAdapter(myAdapter)
+            Log.d("MQ!", "onCreate adapter:$adapter")
+            loadFirebaseData()
         }
-
-        FirebaseApp.initializeApp(this)
-        // TODO data load해야합니다.
     }
 
     override fun onBackPressed() {
         if (isInActionMode) {
             clearActionMode()
-            mAdapter?.notifyDataSetChanged()
+            myAdapter?.notifyDataSetChanged()
         } else {
             super.onBackPressed()
         }
@@ -92,36 +75,44 @@ class MainActivity : AppCompatActivity(){
         toolbar?.getMenu()?.clear()
         toolbar?.inflateMenu(R.menu.main_action_mode)
         isInActionMode = true
-        mAdapter?.notifyDataSetChanged()
+        myAdapter?.notifyDataSetChanged()
         getSupportActionBar()?.setDisplayHomeAsUpEnabled(true)
         prepareSelection(position)
     }
 
     fun prepareSelection(position: Int) {
-        if (!selectionList.contains(mData.get(position))) {
-            selectionList.add(mData.get(position))
+        if (!selectionList.contains(datas.get(position))) {
+            selectionList.add(datas.get(position))
         } else {
-            selectionList.remove(mData.get(position))
+            selectionList.remove(datas.get(position))
         }
-
         updateViewCounter()
     }
+
+    fun getUser(position: Int): User {
+        return datas.get(position)
+    }
+
 
     fun updateViewCounter() {
         selectionList?.apply {
             var counter = size
             toolbar?.apply {
-                if (counter == 1) {
-                    // edit
-                    getMenu()?.getItem(0)?.isVisible = true
-                } else {
-                    getMenu()?.getItem(0)?.isVisible = false
-                }
                 setTitle(counter.toString() + " item(s) selected")
             }
         }
     }
 
+    private fun getKey(user:User) : String{
+        var index = 0
+        for(u in datas){
+            if(u.name.equals(user.name)){
+                return dataIndex.get(index)
+            }
+            index++
+        }
+        return ""
+    }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -136,33 +127,50 @@ class MainActivity : AppCompatActivity(){
                 )
                 return true
             }
-            R.id.action_db -> {
-                startActivity(
-                    Intent(
-                        this@MainActivity,
-                        SecondActivity::class.java
-                    )
-                )
+//            R.id.action_db -> {
+//                startActivity(
+//                    Intent(
+//                        this@MainActivity,
+//                        SecondActivity::class.java
+//                    )
+//                )
+//                return true
+//            }
+            android.R.id.home, R.id.item_cancel -> {
+                clearActionMode()
+                myAdapter?.notifyDataSetChanged()
                 return true
             }
-            android.R.id.home, R.id.item_cancel ->{
+            R.id.item_done -> {
+                Log.d("MQ!", "done clicked selectionList:$selectionList")
+                var ref = FirebaseDatabase.getInstance().getReference()
+                val childUpdates = HashMap<String, Any>()
+                for(user in selectionList){
+                    var key = getKey(user)
+                    user.nuga += -1
+                    me?.let{
+                        it.nuga += 1
+                    }
+                    Log.d("MQ!", "key:$key")
+                    childUpdates.put("/users/" + key, user)
+
+                }
+                me?.let { childUpdates.put("/users/" + getKey(me!!), it) }
+                ref.updateChildren(childUpdates)
+
                 clearActionMode()
-                mAdapter?.notifyDataSetChanged()
-                return true
-            }
-            R.id.item_done ->{
-                Log.d("MQ!", "done clicked")
-                clearActionMode()
-                mAdapter?.notifyDataSetChanged()
-                // TODO 선택한 값을 반영해야합니다.
+                myAdapter?.notifyDataSetChanged()
+
+
+
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
         }
     }
 
-    fun clearActionMode(){
-        isInActionMode = false;
+    fun clearActionMode() {
+        isInActionMode = false
         toolbar?.apply {
             getMenu().clear()
             inflateMenu(R.menu.main)
@@ -172,7 +180,36 @@ class MainActivity : AppCompatActivity(){
         }
     }
 
+    fun loadFirebaseData() {
+        var usersRef = FirebaseDatabase.getInstance().getReference().child("users").apply {
+            var postListener = object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    Log.d(TAG, "onDataChange:$dataSnapshot")
+                    val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+                    var name = pref.getString("name", "")
+                    for (postSnapshot in dataSnapshot.children) {
+                        val key = postSnapshot.key
+                        val user = postSnapshot.getValue(User::class.java)
+                        Log.d(TAG, "key: " + key!!)
+                        Log.d(TAG, "get:$user")
+                        datas.add(user!!)
+                        dataIndex.add(key)
 
+                        if(name.equals(user.name)){
+                            me = user
+                        }
+                    }
+                    Log.d("MQ!", "onDataChange adapter:$myAdapter, datas:$datas, dataIndex:$dataIndex")
+                    Log.d("MQ!", "myAdapter datas:$datas")
+                    myAdapter?.addAllData(datas)
+                }
+
+                override fun onCancelled(p0: DatabaseError) {
+                }
+            }
+            addListenerForSingleValueEvent(postListener)
+        }
+    }
 
 
 //
@@ -284,5 +321,9 @@ class MainActivity : AppCompatActivity(){
 //        childUpdates?.put("/id_list/" + cID, cpostValues!!)
 //        mPostReference?.updateChildren(childUpdates)
 //    }
+
+    companion object {
+        private val TAG = "MainActivity"
+    }
 
 }

@@ -20,6 +20,8 @@ import kotlinx.android.synthetic.main.activity_google.*
 import android.R.id.edit
 import android.content.Context
 import android.content.SharedPreferences
+import com.google.firebase.database.FirebaseDatabase
+import com.moon.nugasam.data.User
 
 
 class SplashActivity : AppCompatActivity() {
@@ -95,7 +97,8 @@ class SplashActivity : AppCompatActivity() {
                             startMainActivity()
 
                             // TODO 이때 DB에 inputText이름으로 0값으로 새롭게 추가한다!
-
+                            var usersRef = FirebaseDatabase.getInstance().getReference().child("users").push()
+                            usersRef.setValue(User(inputText, 0, mAuth.currentUser?.photoUrl.toString(),mAuth.currentUser?.displayName!!))
                         }, "취소", DialogInterface.OnClickListener { dialog, which ->
                             dialog.dismiss()
                             finish()

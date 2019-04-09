@@ -6,8 +6,8 @@
           android:orderInCategory="100"
           app:showAsAction="never"/>
 
-    <item android:id="@+id/action_db"
-          android:title="db_test"
-          android:orderInCategory="100"
-          app:showAsAction="never"/>
+    <!--<item android:id="@+id/action_db"-->
+          <!--android:title="db_test"-->
+          <!--android:orderInCategory="100"-->
+          <!--app:showAsAction="never"/>-->
 </menu>
