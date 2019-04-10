@@ -7,12 +7,14 @@ import android.view.Menu
 import android.view.MenuItem
 import android.content.Intent
 import android.util.Log
+import android.view.View
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.*
 import java.util.ArrayList
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.airbnb.lottie.LottieAnimationView
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.ValueEventListener
 import com.moon.nugasam.data.User
@@ -27,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     private var dataIndex = ArrayList<String>()
     private var datas = ArrayList<User>()
     private var me : User? = null
+    private var progress : LottieAnimationView? = null
 
     // action mode
     var isInActionMode = false
@@ -53,6 +56,7 @@ class MainActivity : AppCompatActivity() {
             Log.d("MQ!", "onCreate adapter:$adapter")
             loadFirebaseData()
         }
+        progress = findViewById(R.id.refresh)
     }
 
     override fun onBackPressed() {
@@ -127,6 +131,22 @@ class MainActivity : AppCompatActivity() {
                 )
                 return true
             }
+            R.id.action_refresh -> {
+                progress?.visibility = View.VISIBLE
+                FirebaseDatabase.getInstance().getReference().child("users").apply {
+                    addListenerForSingleValueEvent(object :ValueEventListener{
+                        override fun onCancelled(p0: DatabaseError) {
+                        }
+
+                        override fun onDataChange(dataSnapshot: DataSnapshot) {
+
+                            updateUI(dataSnapshot)
+                            progress?.visibility = View.INVISIBLE
+                        }
+                    })
+                }
+                return true
+            }
 //            R.id.action_db -> {
 //                startActivity(
 //                    Intent(
@@ -184,35 +204,40 @@ class MainActivity : AppCompatActivity() {
         var usersRef = FirebaseDatabase.getInstance().getReference().child("users").apply {
             var postListener = object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    Log.d(TAG, "onDataChange:$dataSnapshot")
-                    val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
-                    var name = pref.getString("name", "")
-                    for (postSnapshot in dataSnapshot.children) {
-                        val key = postSnapshot.key
-                        val user = postSnapshot.getValue(User::class.java)
-                        Log.d(TAG, "key: " + key!!)
-                        Log.d(TAG, "get:$user")
-                        datas.add(user!!)
-                        dataIndex.add(key)
-
-                        if(name.equals(user.name)){
-                            me = user
-                        }
-                    }
-                    Log.d("MQ!", "onDataChange adapter:$myAdapter, datas:$datas, dataIndex:$dataIndex")
-                    Log.d("MQ!", "myAdapter datas:$datas")
-                    myAdapter?.addAllData(datas)
+                    updateUI(dataSnapshot)
+                    progress?.visibility = View.INVISIBLE
                 }
 
                 override fun onCancelled(p0: DatabaseError) {
                 }
             }
-            addListenerForSingleValueEvent(postListener)
+            addValueEventListener(postListener)
         }
     }
 
+    private fun updateUI(dataSnapshot: DataSnapshot){
+        Log.d(TAG, "onDataChange:$dataSnapshot")
+        val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+        var name = pref.getString("name", "")
+        datas.clear()
+        dataIndex.clear()
+        for (postSnapshot in dataSnapshot.children) {
+            val key = postSnapshot.key
+            val user = postSnapshot.getValue(User::class.java)
+            Log.d(TAG, "key: " + key!!)
+            Log.d(TAG, "get:$user")
+            datas.add(user!!)
+            dataIndex.add(key)
 
-//
+            if(name.equals(user.name)){
+                me = user
+            }
+        }
+        Log.d("MQ!", "onDataChange adapter:$myAdapter, datas:$datas, dataIndex:$dataIndex")
+        Log.d("MQ!", "myAdapter datas:$datas")
+        myAdapter?.addAllData(datas)
+    }
+
 //    override fun onItemLongClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long): Boolean {
 //        Log.d("MQ!", "ID: $ID")
 //        ID = NugaUtils.getPositionString(arrayData?.get(position), 0)
