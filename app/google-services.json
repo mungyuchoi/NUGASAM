@@ -15,7 +15,15 @@
       },
       "oauth_client": [
         {
-          "client_id": "124948762900-q30mttu76ha9u8kr7vd47ourj3jsi27q.apps.googleusercontent.com",
+          "client_id": "124948762900-trskc1vr6c710nourt19dun88ud1ce7q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.moon.nugasam",
+            "certificate_hash": "0b1b0e8240485a5d182f60ebf9aba01265caf0b9"
+          }
+        },
+        {
+          "client_id": "124948762900-86fjijle73k4av5s8b9ehqolnac69fku.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.moon.nugasam",
@@ -33,20 +41,13 @@
         }
       ],
       "services": {
-        "analytics_service": {
-          "status": 1
-        },
         "appinvite_service": {
-          "status": 2,
           "other_platform_oauth_client": [
             {
               "client_id": "124948762900-n4d7i3274dl5r2sgot1maparotb2n29g.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
-        },
-        "ads_service": {
-          "status": 2
         }
       }
     }

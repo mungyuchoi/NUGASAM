@@ -17,9 +17,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.kongzue.dialog.listener.InputDialogOkButtonClickListener
 import com.kongzue.dialog.v2.InputDialog
 import kotlinx.android.synthetic.main.activity_google.*
-import android.R.id.edit
 import android.content.Context
-import android.content.SharedPreferences
 import com.google.firebase.database.FirebaseDatabase
 import com.moon.nugasam.data.User
 
@@ -55,6 +53,7 @@ class SplashActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
+        Log.d("MQ!", "onActivityResult requestCode : $requestCode")
         if (requestCode == RC_SIGN_IN) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             try {

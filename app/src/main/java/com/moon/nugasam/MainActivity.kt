@@ -49,11 +49,11 @@ class MainActivity : AppCompatActivity() {
             setHasFixedSize(true)
             setLayoutManager(LinearLayoutManager(this@MainActivity))
 
-            Log.d("MQ!", "onCreate datas$datas")
+            Log.d(TAG, "onCreate datas$datas")
 
             myAdapter = MyAdapter(this@MainActivity, datas.clone() as ArrayList<User>?)
             setAdapter(myAdapter)
-            Log.d("MQ!", "onCreate adapter:$adapter")
+            Log.d(TAG, "onCreate adapter:$adapter")
             loadFirebaseData()
         }
         progress = findViewById(R.id.refresh)
@@ -162,7 +162,7 @@ class MainActivity : AppCompatActivity() {
                 return true
             }
             R.id.item_done -> {
-                Log.d("MQ!", "done clicked selectionList:$selectionList")
+                Log.d("R!", "done clicked selectionList:$selectionList")
                 var ref = FirebaseDatabase.getInstance().getReference()
                 val childUpdates = HashMap<String, Any>()
                 for(user in selectionList){
@@ -171,7 +171,7 @@ class MainActivity : AppCompatActivity() {
                     me?.let{
                         it.nuga += 1
                     }
-                    Log.d("MQ!", "key:$key")
+                    Log.d(TAG, "key:$key")
                     childUpdates.put("/users/" + key, user)
 
                 }
@@ -233,8 +233,8 @@ class MainActivity : AppCompatActivity() {
                 me = user
             }
         }
-        Log.d("MQ!", "onDataChange adapter:$myAdapter, datas:$datas, dataIndex:$dataIndex")
-        Log.d("MQ!", "myAdapter datas:$datas")
+        Log.d(TAG, "onDataChange adapter:$myAdapter, datas:$datas, dataIndex:$dataIndex")
+        Log.d(TAG, "myAdapter datas:$datas")
         myAdapter?.addAllData(datas)
     }
 
