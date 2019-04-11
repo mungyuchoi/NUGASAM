@@ -1,11 +1,13 @@
 package com.moon.nugasam
 
 import android.content.Context
+import android.content.DialogInterface
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import android.view.View
 import com.google.firebase.FirebaseApp
@@ -17,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieAnimationView
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.ValueEventListener
+import com.kongzue.dialog.v2.SelectDialog
 import com.moon.nugasam.data.User
 import java.util.HashMap
 
@@ -28,8 +31,8 @@ class MainActivity : AppCompatActivity() {
     private var myAdapter: MyAdapter? = null
     private var dataIndex = ArrayList<String>()
     private var datas = ArrayList<User>()
-    private var me : User? = null
-    private var progress : LottieAnimationView? = null
+    private var me: User? = null
+    private var progress: LottieAnimationView? = null
 
     // action mode
     var isInActionMode = false
@@ -107,16 +110,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun getKey(user:User) : String{
+    private fun getKey(user: User): String {
         var index = 0
-        for(u in datas){
-            if(u.name.equals(user.name)){
+        for (u in datas) {
+            if (u.name.equals(user.name)) {
                 return dataIndex.get(index)
             }
             index++
         }
         return ""
     }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -131,10 +135,32 @@ class MainActivity : AppCompatActivity() {
                 )
                 return true
             }
+            R.id.action_reorder -> {
+                SelectDialog.show(
+                    this@MainActivity,
+                    "정렬",
+                    "어느 기준으로 정렬하시겠습니까?",
+                    "확인",
+                    DialogInterface.OnClickListener { dialog, which ->
+                        dialog.dismiss()
+                    }
+                    ,
+                    "취소",
+                    DialogInterface.OnClickListener { dialog, which ->
+                        dialog.dismiss()
+                    })
+                return true
+            }
+            R.id.action_qna -> {
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.data = Uri.parse("https://moonque.tistory.com/105")
+                startActivity(intent)
+                return true
+            }
             R.id.action_refresh -> {
                 progress?.visibility = View.VISIBLE
                 FirebaseDatabase.getInstance().getReference().child("users").apply {
-                    addListenerForSingleValueEvent(object :ValueEventListener{
+                    addListenerForSingleValueEvent(object : ValueEventListener {
                         override fun onCancelled(p0: DatabaseError) {
                         }
 
@@ -147,28 +173,19 @@ class MainActivity : AppCompatActivity() {
                 }
                 return true
             }
-//            R.id.action_db -> {
-//                startActivity(
-//                    Intent(
-//                        this@MainActivity,
-//                        SecondActivity::class.java
-//                    )
-//                )
-//                return true
-//            }
             android.R.id.home, R.id.item_cancel -> {
                 clearActionMode()
                 myAdapter?.notifyDataSetChanged()
                 return true
             }
             R.id.item_done -> {
-                Log.d("R!", "done clicked selectionList:$selectionList")
+                Log.d(TAG, "done clicked selectionList:$selectionList")
                 var ref = FirebaseDatabase.getInstance().getReference()
                 val childUpdates = HashMap<String, Any>()
-                for(user in selectionList){
+                for (user in selectionList) {
                     var key = getKey(user)
                     user.nuga += -1
-                    me?.let{
+                    me?.let {
                         it.nuga += 1
                     }
                     Log.d(TAG, "key:$key")
@@ -177,12 +194,8 @@ class MainActivity : AppCompatActivity() {
                 }
                 me?.let { childUpdates.put("/users/" + getKey(me!!), it) }
                 ref.updateChildren(childUpdates)
-
                 clearActionMode()
                 myAdapter?.notifyDataSetChanged()
-
-
-
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
@@ -215,7 +228,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateUI(dataSnapshot: DataSnapshot){
+    private fun updateUI(dataSnapshot: DataSnapshot) {
         Log.d(TAG, "onDataChange:$dataSnapshot")
         val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
         var name = pref.getString("name", "")
@@ -229,8 +242,11 @@ class MainActivity : AppCompatActivity() {
             datas.add(user!!)
             dataIndex.add(key)
 
-            if(name.equals(user.name)){
+            if (name.equals(user.name)) {
                 me = user
+                var editor = pref.edit()
+                editor.putString("key", key)
+                editor.commit()
             }
         }
         Log.d(TAG, "onDataChange adapter:$myAdapter, datas:$datas, dataIndex:$dataIndex")

@@ -94,7 +94,7 @@ class SplashActivity : AppCompatActivity() {
                             dialog.dismiss()
                             val pref = applicationContext.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
                             val editor = pref.edit()
-                            editor.putString("name", inputText)
+                            editor.putString("name", mAuth.currentUser?.displayName)
                             editor.putString("image", mAuth.currentUser?.photoUrl.toString())
                             editor.commit()
 
