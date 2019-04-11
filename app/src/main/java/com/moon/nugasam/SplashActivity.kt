@@ -45,8 +45,14 @@ class SplashActivity : AppCompatActivity() {
         if (currentUser == null) {
             signIn()
         } else {
+            val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+            var name = pref.getString("name", "")
+            if (!mAuth.currentUser?.displayName.equals(name)) {
+                val editor = pref.edit()
+                editor.putString("name", mAuth.currentUser?.displayName)
+                editor.commit()
+            }
             startMainActivity()
-
         }
     }
 
