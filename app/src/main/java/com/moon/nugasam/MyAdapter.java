@@ -43,7 +43,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         @Override
         public boolean onLongClick(View view) {
             User user = ((MainActivity) mActivity).getUser(getAdapterPosition());
-            if (user.name.equals(myName)) {
+            if (user.name.equals(myName) || user.fullName.equals((myName))) {
                 Toast.makeText(mActivity, "본인은 선택할 수 없습니다.", Toast.LENGTH_LONG).show();
                 return false;
             }
@@ -56,7 +56,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
             if (((MainActivity) mActivity).isInActionMode()) {
                 User user = ((MainActivity) mActivity).getUser(getAdapterPosition());
                 Log.d("MQ!", "onCiick view:" + view + ", selectUserName: " + user.name + ", myName: " + myName);
-                if (user.name.equals(myName)) {
+                if (user.name.equals(myName) || user.fullName.equals((myName))) {
                     Toast.makeText(mActivity, "본인은 선택할 수 없습니다.", Toast.LENGTH_LONG).show();
                     return;
                 }

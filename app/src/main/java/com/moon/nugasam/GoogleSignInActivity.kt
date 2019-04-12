@@ -1,5 +1,7 @@
 package com.moon.nugasam
 
+import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import com.google.android.material.snackbar.Snackbar
@@ -13,6 +15,10 @@ import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.database.FirebaseDatabase
+import com.kongzue.dialog.listener.InputDialogOkButtonClickListener
+import com.kongzue.dialog.v2.InputDialog
+import com.moon.nugasam.data.User
 import kotlinx.android.synthetic.main.activity_google.*
 
 /**
@@ -35,12 +41,16 @@ class GoogleSignInActivity : BaseActivity(), View.OnClickListener {
         signOutButton.setOnClickListener(this)
         disconnectButton.setOnClickListener(this)
 
+        var intent = getIntent()
+        profile_name.setText(intent.getStringExtra("name"))
+        profile.setOnClickListener(this)
+
         // [START config_signin]
         // Configure Google Sign In
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id))
-            .requestEmail()
-            .build()
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build()
         // [END config_signin]
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
@@ -88,23 +98,23 @@ class GoogleSignInActivity : BaseActivity(), View.OnClickListener {
 
         val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
         mAuth.signInWithCredential(credential)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    // Sign in success, update UI with the signed-in user's information
-                    Log.d(TAG, "signInWithCredential:success")
-                    val user = mAuth.currentUser
-                    updateUI(user)
-                } else {
-                    // If sign in fails, display a message to the user.
-                    Log.w(TAG, "signInWithCredential:failure", task.exception)
-                    Snackbar.make(main_layout, "Authentication Failed.", Snackbar.LENGTH_SHORT).show()
-                    updateUI(null)
-                }
+                .addOnCompleteListener(this) { task ->
+                    if (task.isSuccessful) {
+                        // Sign in success, update UI with the signed-in user's information
+                        Log.d(TAG, "signInWithCredential:success")
+                        val user = mAuth.currentUser
+                        updateUI(user)
+                    } else {
+                        // If sign in fails, display a message to the user.
+                        Log.w(TAG, "signInWithCredential:failure", task.exception)
+                        Snackbar.make(main_layout, "Authentication Failed.", Snackbar.LENGTH_SHORT).show()
+                        updateUI(null)
+                    }
 
-                // [START_EXCLUDE]
-                hideProgressDialog()
-                // [END_EXCLUDE]
-            }
+                    // [START_EXCLUDE]
+                    hideProgressDialog()
+                    // [END_EXCLUDE]
+                }
     }
     // [END auth_with_google]
 
@@ -156,6 +166,34 @@ class GoogleSignInActivity : BaseActivity(), View.OnClickListener {
             R.id.signInButton -> signIn()
             R.id.signOutButton -> signOut()
             R.id.disconnectButton -> revokeAccess()
+            R.id.profile -> {
+                InputDialog.build(
+                        this@GoogleSignInActivity,
+                        "이름을 입력해주세요.", "채팅방에서 사용할 이름을 입력해주세요", "완료",
+                        InputDialogOkButtonClickListener { dialog, inputText ->
+                            dialog.dismiss()
+                            val pref = applicationContext.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+                            val editor = pref.edit()
+                            editor.putString("name", mAuth.currentUser?.displayName)
+                            editor.putString("image", mAuth.currentUser?.photoUrl.toString())
+                            editor.commit()
+
+                            Log.d(TAG, "name: $inputText")
+                            profile_name.setText(inputText)
+
+                            // TODO 이때 DB에 inputText이름으로 0값으로 새롭게 추가한다!
+                            var key = pref.getString("key","")
+                            var usersRef = FirebaseDatabase.getInstance().getReference().child("users")
+                            var meRef = usersRef.child(key)
+                            meRef.updateChildren(HashMap<String, Any>().apply { put("name", inputText) })
+                        }, "취소", DialogInterface.OnClickListener { dialog, which ->
+                    dialog.dismiss()
+                }).apply {
+                    setDialogStyle(1)
+                    setDefaultInputHint(mAuth.currentUser?.displayName)
+                    showDialog()
+                }
+            }
         }
     }
 

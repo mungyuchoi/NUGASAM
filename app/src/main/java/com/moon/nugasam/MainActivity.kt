@@ -35,6 +35,7 @@ class MainActivity : AppCompatActivity() {
     private var datas = ArrayList<User>()
     private var me: User? = null
     private var progress: LottieAnimationView? = null
+    private var reorder: String? = null
 
     // action mode
     var isInActionMode = false
@@ -49,6 +50,8 @@ class MainActivity : AppCompatActivity() {
         }
         setSupportActionBar(toolbar)
 
+        val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+        reorder = pref.getString("reorder", "name")
         // recyclerview
         recyclerView = findViewById<RecyclerView>(R.id.recyclerView)?.apply {
             setHasFixedSize(true)
@@ -129,28 +132,29 @@ class MainActivity : AppCompatActivity() {
         // as you specify a parent activity in AndroidManifest.xml.
         when (item.itemId) {
             R.id.action_profile -> {
-                startActivity(
-                    Intent(
-                        this@MainActivity,
-                        GoogleSignInActivity::class.java
-                    )
-                )
+                var intent = Intent(this@MainActivity,
+                        GoogleSignInActivity::class.java)
+                intent.putExtra("name", me?.name)
+                startActivity(intent)
                 return true
             }
             R.id.action_reorder -> {
-                SelectDialog.show(
-                    this@MainActivity,
-                    "정렬",
-                    "어느 기준으로 정렬하시겠습니까?",
-                    "확인",
-                    DialogInterface.OnClickListener { dialog, which ->
-                        dialog.dismiss()
-                    }
-                    ,
-                    "취소",
-                    DialogInterface.OnClickListener { dialog, which ->
-                        dialog.dismiss()
+                if (reorder.equals("name")) {
+                    reorder = "nuga"
+                } else {
+                    reorder = "name"
+                }
+                FirebaseDatabase.getInstance().getReference().child("users").orderByChild(reorder!!).apply {
+                    addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onCancelled(p0: DatabaseError) {
+                        }
+
+                        override fun onDataChange(dataSnapshot: DataSnapshot) {
+                            updateUI(dataSnapshot)
+                            progress?.visibility = View.INVISIBLE
+                        }
                     })
+                }
                 return true
             }
             R.id.action_qna -> {
@@ -161,13 +165,12 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.action_refresh -> {
                 progress?.visibility = View.VISIBLE
-                FirebaseDatabase.getInstance().getReference().child("users").apply {
+                FirebaseDatabase.getInstance().getReference().child("users").orderByChild(reorder!!).apply {
                     addListenerForSingleValueEvent(object : ValueEventListener {
                         override fun onCancelled(p0: DatabaseError) {
                         }
 
                         override fun onDataChange(dataSnapshot: DataSnapshot) {
-
                             updateUI(dataSnapshot)
                             progress?.visibility = View.INVISIBLE
                         }
@@ -205,7 +208,6 @@ class MainActivity : AppCompatActivity() {
                         dialog.dismiss()
                     }, "취소", DialogInterface.OnClickListener { dialog, which ->
                         dialog.dismiss()
-                        finish()
                     }).apply {
                     setDialogStyle(1)
                     showDialog()
@@ -228,18 +230,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun loadFirebaseData() {
-        var usersRef = FirebaseDatabase.getInstance().getReference().child("users").apply {
-            var postListener = object : ValueEventListener {
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    updateUI(dataSnapshot)
-                    progress?.visibility = View.INVISIBLE
-                }
+        var usersRef =
+            FirebaseDatabase.getInstance().getReference().child("users").orderByChild(reorder!!).apply {
+                var postListener = object : ValueEventListener {
+                    override fun onDataChange(dataSnapshot: DataSnapshot) {
+                        updateUI(dataSnapshot)
+                        progress?.visibility = View.INVISIBLE
+                    }
 
-                override fun onCancelled(p0: DatabaseError) {
+                    override fun onCancelled(p0: DatabaseError) {
+                    }
                 }
+                addValueEventListener(postListener)
             }
-            addValueEventListener(postListener)
-        }
     }
 
     private fun updateUI(dataSnapshot: DataSnapshot) {
@@ -265,115 +268,6 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "myAdapter datas:$datas")
         myAdapter?.addAllData(datas)
     }
-
-//    override fun onItemLongClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long): Boolean {
-//        Log.d("MQ!", "ID: $ID")
-//        ID = NugaUtils.getPositionString(arrayData?.get(position), 0)
-//        Log.d("MQ!", "ID: $ID")
-//        name = NugaUtils.getPositionString(arrayData?.get(position), 1)
-//        nuga = Integer.parseInt(NugaUtils.getPositionString(arrayData?.get(position), 2)) + 1
-//        mPostReference = FirebaseDatabase.getInstance().reference
-//        var childUpdates = HashMap<String, Any>()
-//        var postValues: Map<String, Any>? = null
-//        var post = FirebasePost(ID, name, nuga)
-//        postValues = post.toMap()
-//        Log.d("MQ!", "postDB id:$ID, name:$name, nuga:$nuga")
-//        childUpdates?.put("/id_list/" + ID, postValues!!)
-//
-//        cNuga--
-//        var cpostValues: Map<String, Any>? = null
-//        post = FirebasePost(cID, cName, cNuga)
-//        cpostValues = post.toMap()
-//        Log.d("MQ!", "postDB current id:$cID, name:$cName, nuga:$cNuga")
-//        childUpdates?.put("/id_list/" + cID, cpostValues!!)
-//        mPostReference?.updateChildren(childUpdates)
-//
-//
-//        getFirebaseDatabase()
-//        return true
-//    }
-//
-//
-//    override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-//        Log.d("MQ!", "ID: $ID")
-//        ID = NugaUtils.getPositionString(arrayData?.get(position), 0)
-//        Log.d("MQ!", "ID: $ID")
-//        name = NugaUtils.getPositionString(arrayData?.get(position), 1)
-//        nuga = Integer.parseInt(NugaUtils.getPositionString(arrayData?.get(position), 2)) - 1
-//        postFirebaseDatabase(true)
-//        getFirebaseDatabase()
-//    }
-//
-//    fun getFirebaseDatabase() {
-//        val postListener = object : ValueEventListener {
-//            override fun onDataChange(dataSnapshot: DataSnapshot) {
-//                Log.e("getFirebaseDatabase", "key: " + dataSnapshot.childrenCount)
-//                arrayData.clear()
-//                arrayIndex.clear()
-//                for (postSnapshot in dataSnapshot.children) {
-//                    val key = postSnapshot.key
-//                    val get = postSnapshot.getValue(FirebasePost::class.java)
-//                    val info = arrayOf(get!!.id, get.name, get.nuga.toString())
-//                    if (get?.name == "최문규") {
-//                        cID = get.id
-//                        cName = "최문규"
-//                        cNuga = get.nuga
-//                    }
-//                    val Result = setTextLength(info[0], 10) + setTextLength(info[1], 10) + setTextLength(
-//                        info[2],
-//                        10
-//                    )
-//                    arrayData.add(Result)
-//                    arrayIndex.add(key!!)
-//                    Log.d("getFirebaseDatabase", "key: " + key!!)
-//                    Log.d("getFirebaseDatabase", "info: " + info[0] + info[1] + info[2])
-//                }
-//                arrayAdapter?.clear()
-//                arrayAdapter?.addAll(arrayData)
-//                arrayAdapter?.notifyDataSetChanged()
-//            }
-//
-//            override fun onCancelled(databaseError: DatabaseError) {
-//                Log.w("getFirebaseDatabase", "loadPost:onCancelled", databaseError.toException())
-//            }
-//        }
-//        val sortbyAge = FirebaseDatabase.getInstance().reference.child("id_list").orderByChild("nuga")
-//        sortbyAge.addListenerForSingleValueEvent(postListener)
-//    }
-//
-//    private fun setTextLength(text: String, length: Int): String {
-//        var text = text
-//        if (text.length < length) {
-//            val gap = length - text.length
-//            for (i in 0 until gap) {
-//                text = "$text "
-//            }
-//        }
-//        return text
-//    }
-//
-//
-//    fun postFirebaseDatabase(add: Boolean) {
-//        mPostReference = FirebaseDatabase.getInstance().reference
-//        var childUpdates = HashMap<String, Any>()
-//        var postValues: Map<String, Any>? = null
-//        if (add) {
-//            val post = FirebasePost(ID, name, nuga)
-//            postValues = post.toMap()
-//        }
-//        Log.d("MQ!", "postDB id:$ID, name:$name, nuga:$nuga")
-//        childUpdates?.put("/id_list/" + ID, postValues!!)
-//
-//        cNuga++
-//        var cpostValues: Map<String, Any>? = null
-//        if (add) {
-//            val post = FirebasePost(cID, cName, cNuga)
-//            cpostValues = post.toMap()
-//        }
-//        Log.d("MQ!", "postDB current id:$cID, name:$cName, nuga:$cNuga")
-//        childUpdates?.put("/id_list/" + cID, cpostValues!!)
-//        mPostReference?.updateChildren(childUpdates)
-//    }
 
     companion object {
         private val TAG = "MainActivity"
