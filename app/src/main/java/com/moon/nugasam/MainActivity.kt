@@ -19,6 +19,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieAnimationView
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.ValueEventListener
+import com.kongzue.dialog.listener.InputDialogOkButtonClickListener
+import com.kongzue.dialog.v2.InputDialog
 import com.kongzue.dialog.v2.SelectDialog
 import com.moon.nugasam.data.User
 import java.util.HashMap
@@ -105,7 +107,7 @@ class MainActivity : AppCompatActivity() {
         selectionList?.apply {
             var counter = size
             toolbar?.apply {
-                setTitle(counter.toString() + " item(s) selected")
+                setTitle(counter.toString() + "명을 선택하셨습니다.")
             }
         }
     }
@@ -180,22 +182,34 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.item_done -> {
                 Log.d(TAG, "done clicked selectionList:$selectionList")
-                var ref = FirebaseDatabase.getInstance().getReference()
-                val childUpdates = HashMap<String, Any>()
-                for (user in selectionList) {
-                    var key = getKey(user)
-                    user.nuga += -1
-                    me?.let {
-                        it.nuga += 1
-                    }
-                    Log.d(TAG, "key:$key")
-                    childUpdates.put("/users/" + key, user)
+                SelectDialog.build(
+                    this@MainActivity, "정말 샀나요?", "", "샀음", DialogInterface.OnClickListener { dialog, inputText ->
+                        var ref = FirebaseDatabase.getInstance().getReference()
+                        val childUpdates = HashMap<String, Any>()
+                        for (user in selectionList) {
+                            var key = getKey(user)
+                            user.nuga += -1
+                            me?.let {
+                                it.nuga += 1
+                            }
+                            Log.d(TAG, "key:$key")
+                            childUpdates.put("/users/" + key, user)
 
+                        }
+                        Log.i(TAG, "done me : $me")
+                        me?.let { childUpdates.put("/users/" + getKey(me!!), it) }
+                        Log.i(TAG, "done childUpdates: $childUpdates")
+                        ref.updateChildren(childUpdates)
+                        clearActionMode()
+                        myAdapter?.notifyDataSetChanged()
+                        dialog.dismiss()
+                    }, "취소", DialogInterface.OnClickListener { dialog, which ->
+                        dialog.dismiss()
+                        finish()
+                    }).apply {
+                    setDialogStyle(1)
+                    showDialog()
                 }
-                me?.let { childUpdates.put("/users/" + getKey(me!!), it) }
-                ref.updateChildren(childUpdates)
-                clearActionMode()
-                myAdapter?.notifyDataSetChanged()
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
@@ -237,12 +251,10 @@ class MainActivity : AppCompatActivity() {
         for (postSnapshot in dataSnapshot.children) {
             val key = postSnapshot.key
             val user = postSnapshot.getValue(User::class.java)
-            Log.d(TAG, "key: " + key!!)
-            Log.d(TAG, "get:$user")
             datas.add(user!!)
-            dataIndex.add(key)
+            dataIndex.add(key!!)
 
-            if (name.equals(user.name)) {
+            if (name.equals(user.fullName)) {
                 me = user
                 var editor = pref.edit()
                 editor.putString("key", key)
