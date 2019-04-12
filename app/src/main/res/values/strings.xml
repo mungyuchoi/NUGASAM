@@ -7,6 +7,8 @@
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
     <string name="action_profile">프로필</string>
+    <string name="action_cat">야옹</string>
+    <string name="action_deer">깨애엨</string>
     <string name="action_reorder">정렬</string>
     <string name="action_qna">문의하기</string>
     <string name="action_refresh">Refresh</string>

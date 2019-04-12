@@ -1,5 +1,6 @@
 package com.moon.nugasam
 
+import android.animation.Animator
 import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
@@ -10,6 +11,7 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import android.view.View
+import android.widget.ImageView
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.*
 import java.util.ArrayList
@@ -17,12 +19,14 @@ import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieAnimationView
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.ValueEventListener
 import com.kongzue.dialog.listener.InputDialogOkButtonClickListener
 import com.kongzue.dialog.v2.InputDialog
 import com.kongzue.dialog.v2.SelectDialog
 import com.moon.nugasam.data.User
+import kotlinx.android.synthetic.main.content_main.*
 import java.util.HashMap
 
 
@@ -181,6 +185,55 @@ class MainActivity : AppCompatActivity() {
             android.R.id.home, R.id.item_cancel -> {
                 clearActionMode()
                 myAdapter?.notifyDataSetChanged()
+                return true
+            }
+            R.id.action_cat -> {
+                refresh?.let {
+                    it.visibility = View.VISIBLE
+                    it.repeatCount = 1
+                    it.setAnimation(R.raw.cat)
+                    it.playAnimation()
+                    it.addAnimatorListener(object : Animator.AnimatorListener  {
+                        override fun onAnimationRepeat(animation: Animator?) {
+                        }
+
+                        override fun onAnimationCancel(animation: Animator?) {
+                        }
+
+                        override fun onAnimationStart(animation: Animator?) {
+                        }
+
+                        override fun onAnimationEnd(animation: Animator?) {
+                            it.visibility = View.INVISIBLE
+                        }
+                    })
+
+                }
+                return true
+            }
+            R.id.action_deer -> {
+                refresh?.let {
+                    it.visibility = View.VISIBLE
+                    it.repeatCount = 1
+                    it.setAnimation(R.raw.deer)
+                    it.scaleType = ImageView.ScaleType.FIT_CENTER
+                    it.playAnimation()
+                    it.addAnimatorListener(object : Animator.AnimatorListener  {
+                        override fun onAnimationRepeat(animation: Animator?) {
+                        }
+
+                        override fun onAnimationCancel(animation: Animator?) {
+                        }
+
+                        override fun onAnimationStart(animation: Animator?) {
+                        }
+
+                        override fun onAnimationEnd(animation: Animator?) {
+                            it.visibility = View.INVISIBLE
+                        }
+                    })
+
+                }
                 return true
             }
             R.id.item_done -> {

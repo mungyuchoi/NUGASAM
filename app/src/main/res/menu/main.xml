@@ -20,6 +20,14 @@
           android:title="@string/action_qna"
           app:showAsAction="never"/>
 
+    <item android:id="@+id/action_cat"
+        android:title="@string/action_cat"
+        app:showAsAction="never"/>
+
+    <item android:id="@+id/action_deer"
+        android:title="@string/action_deer"
+        app:showAsAction="never"/>
+
     <!--<item android:id="@+id/action_db"-->
           <!--android:title="db_test"-->
           <!--android:orderInCategory="100"-->
