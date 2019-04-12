@@ -40,6 +40,7 @@ class MainActivity : AppCompatActivity() {
     private var me: User? = null
     private var progress: LottieAnimationView? = null
     private var reorder: String? = null
+    private var query: Query? = null
 
     // action mode
     var isInActionMode = false
@@ -148,17 +149,11 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     reorder = "name"
                 }
-                FirebaseDatabase.getInstance().getReference().child("users").orderByChild(reorder!!).apply {
-                    addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onCancelled(p0: DatabaseError) {
-                        }
-
-                        override fun onDataChange(dataSnapshot: DataSnapshot) {
-                            updateUI(dataSnapshot)
-                            progress?.visibility = View.INVISIBLE
-                        }
-                    })
-                }
+                val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+                var editor = pref.edit()
+                editor.putString("reorder", reorder)
+                editor.commit()
+                loadFirebaseData()
                 return true
             }
             R.id.action_qna -> {
@@ -193,7 +188,7 @@ class MainActivity : AppCompatActivity() {
                     it.repeatCount = 1
                     it.setAnimation(R.raw.cat)
                     it.playAnimation()
-                    it.addAnimatorListener(object : Animator.AnimatorListener  {
+                    it.addAnimatorListener(object : Animator.AnimatorListener {
                         override fun onAnimationRepeat(animation: Animator?) {
                         }
 
@@ -218,7 +213,7 @@ class MainActivity : AppCompatActivity() {
                     it.setAnimation(R.raw.deer)
                     it.scaleType = ImageView.ScaleType.FIT_CENTER
                     it.playAnimation()
-                    it.addAnimatorListener(object : Animator.AnimatorListener  {
+                    it.addAnimatorListener(object : Animator.AnimatorListener {
                         override fun onAnimationRepeat(animation: Animator?) {
                         }
 
@@ -239,29 +234,30 @@ class MainActivity : AppCompatActivity() {
             R.id.item_done -> {
                 Log.d(TAG, "done clicked selectionList:$selectionList")
                 SelectDialog.build(
-                    this@MainActivity, "정말 샀나요?", "", "샀음", DialogInterface.OnClickListener { dialog, inputText ->
-                        var ref = FirebaseDatabase.getInstance().getReference()
-                        val childUpdates = HashMap<String, Any>()
-                        for (user in selectionList) {
-                            var key = getKey(user)
-                            user.nuga += -1
-                            me?.let {
-                                it.nuga += 1
-                            }
-                            Log.d(TAG, "key:$key")
-                            childUpdates.put("/users/" + key, user)
-
+                        this@MainActivity, "정말 샀나요?", "", "샀음", DialogInterface.OnClickListener { dialog, inputText ->
+                    var ref = FirebaseDatabase.getInstance().getReference()
+                    val childUpdates = HashMap<String, Any>()
+                    for (user in selectionList) {
+                        var key = getKey(user)
+                        user.nuga += -1
+                        me?.let {
+                            it.nuga += 1
                         }
-                        Log.i(TAG, "done me : $me")
-                        me?.let { childUpdates.put("/users/" + getKey(me!!), it) }
-                        Log.i(TAG, "done childUpdates: $childUpdates")
-                        ref.updateChildren(childUpdates)
-                        clearActionMode()
-                        myAdapter?.notifyDataSetChanged()
-                        dialog.dismiss()
-                    }, "취소", DialogInterface.OnClickListener { dialog, which ->
-                        dialog.dismiss()
-                    }).apply {
+                        Log.d(TAG, "key:$key")
+                        childUpdates.put("/users/" + key, user)
+
+                    }
+                    Log.i(TAG, "done me : $me")
+                    me?.let { childUpdates.put("/users/" + getKey(me!!), it) }
+                    Log.i(TAG, "done childUpdates: $childUpdates")
+                    ref.updateChildren(childUpdates)
+                    clearActionMode()
+                    myAdapter?.notifyDataSetChanged()
+                    dialog.dismiss()
+                }, "취소", DialogInterface.OnClickListener { dialog, which ->
+                    dialog.dismiss()
+                    clearActionMode()
+                }).apply {
                     setDialogStyle(1)
                     showDialog()
                 }
@@ -282,20 +278,29 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun loadFirebaseData() {
-        var usersRef =
-            FirebaseDatabase.getInstance().getReference().child("users").orderByChild(reorder!!).apply {
-                var postListener = object : ValueEventListener {
-                    override fun onDataChange(dataSnapshot: DataSnapshot) {
-                        updateUI(dataSnapshot)
-                        progress?.visibility = View.INVISIBLE
-                    }
+    var postListener = object : ValueEventListener {
+        override fun onDataChange(dataSnapshot: DataSnapshot) {
+            updateUI(dataSnapshot)
+            progress?.visibility = View.INVISIBLE
+        }
 
-                    override fun onCancelled(p0: DatabaseError) {
+        override fun onCancelled(p0: DatabaseError) {
+        }
+    }
+
+    fun loadFirebaseData() {
+        if(query == null){
+            query =
+                    FirebaseDatabase.getInstance().getReference().child("users").orderByChild(reorder!!).apply {
+                        addValueEventListener(postListener)
                     }
-                }
+        } else {
+            query?.removeEventListener(postListener)
+            query = FirebaseDatabase.getInstance().getReference().child("users").orderByChild(reorder!!).apply {
                 addValueEventListener(postListener)
             }
+        }
+
     }
 
     private fun updateUI(dataSnapshot: DataSnapshot) {
