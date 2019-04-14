@@ -137,8 +137,10 @@ class MainActivity : AppCompatActivity() {
         // as you specify a parent activity in AndroidManifest.xml.
         when (item.itemId) {
             R.id.action_profile -> {
-                var intent = Intent(this@MainActivity,
-                        GoogleSignInActivity::class.java)
+                var intent = Intent(
+                    this@MainActivity,
+                    GoogleSignInActivity::class.java
+                )
                 intent.putExtra("name", me?.name)
                 startActivity(intent)
                 return true
@@ -180,6 +182,24 @@ class MainActivity : AppCompatActivity() {
             android.R.id.home, R.id.item_cancel -> {
                 clearActionMode()
                 myAdapter?.notifyDataSetChanged()
+                return true
+            }
+            R.id.action_share -> {
+                var shareBody = ""
+                var index = 0
+                for (user in datas) {
+                    if (index == datas.lastIndex) {
+                        shareBody += (user.name + " " + user.nuga)
+                    } else {
+                        shareBody += (user.name + " " + user.nuga + "\n")
+                    }
+                    index++
+                }
+                var intent = Intent(android.content.Intent.ACTION_SEND).apply {
+                    setType("text/plain")
+                    putExtra(android.content.Intent.EXTRA_TEXT, shareBody)
+                }
+                startActivity(Intent.createChooser(intent, resources.getString(R.string.action_share)))
                 return true
             }
             R.id.action_cat -> {
@@ -234,30 +254,30 @@ class MainActivity : AppCompatActivity() {
             R.id.item_done -> {
                 Log.d(TAG, "done clicked selectionList:$selectionList")
                 SelectDialog.build(
-                        this@MainActivity, "정말 샀나요?", "", "샀음", DialogInterface.OnClickListener { dialog, inputText ->
-                    var ref = FirebaseDatabase.getInstance().getReference()
-                    val childUpdates = HashMap<String, Any>()
-                    for (user in selectionList) {
-                        var key = getKey(user)
-                        user.nuga += -1
-                        me?.let {
-                            it.nuga += 1
-                        }
-                        Log.d(TAG, "key:$key")
-                        childUpdates.put("/users/" + key, user)
+                    this@MainActivity, "정말 샀나요?", "", "샀음", DialogInterface.OnClickListener { dialog, inputText ->
+                        var ref = FirebaseDatabase.getInstance().getReference()
+                        val childUpdates = HashMap<String, Any>()
+                        for (user in selectionList) {
+                            var key = getKey(user)
+                            user.nuga += -1
+                            me?.let {
+                                it.nuga += 1
+                            }
+                            Log.d(TAG, "key:$key")
+                            childUpdates.put("/users/" + key, user)
 
-                    }
-                    Log.i(TAG, "done me : $me")
-                    me?.let { childUpdates.put("/users/" + getKey(me!!), it) }
-                    Log.i(TAG, "done childUpdates: $childUpdates")
-                    ref.updateChildren(childUpdates)
-                    clearActionMode()
-                    myAdapter?.notifyDataSetChanged()
-                    dialog.dismiss()
-                }, "취소", DialogInterface.OnClickListener { dialog, which ->
-                    dialog.dismiss()
-                    clearActionMode()
-                }).apply {
+                        }
+                        Log.i(TAG, "done me : $me")
+                        me?.let { childUpdates.put("/users/" + getKey(me!!), it) }
+                        Log.i(TAG, "done childUpdates: $childUpdates")
+                        ref.updateChildren(childUpdates)
+                        clearActionMode()
+                        myAdapter?.notifyDataSetChanged()
+                        dialog.dismiss()
+                    }, "취소", DialogInterface.OnClickListener { dialog, which ->
+                        dialog.dismiss()
+                        clearActionMode()
+                    }).apply {
                     setDialogStyle(1)
                     showDialog()
                 }
@@ -289,11 +309,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun loadFirebaseData() {
-        if(query == null){
+        if (query == null) {
             query =
-                    FirebaseDatabase.getInstance().getReference().child("users").orderByChild(reorder!!).apply {
-                        addValueEventListener(postListener)
-                    }
+                FirebaseDatabase.getInstance().getReference().child("users").orderByChild(reorder!!).apply {
+                    addValueEventListener(postListener)
+                }
         } else {
             query?.removeEventListener(postListener)
             query = FirebaseDatabase.getInstance().getReference().child("users").orderByChild(reorder!!).apply {
