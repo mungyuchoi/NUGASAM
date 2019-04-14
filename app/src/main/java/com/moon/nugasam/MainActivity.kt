@@ -223,7 +223,7 @@ class MainActivity : AppCompatActivity() {
                     setType("text/plain")
                     putExtra(android.content.Intent.EXTRA_TEXT, shareBody)
                 }
-                startActivity(Intent.createChooser(intent, resources.getString(R.string.action_share)))
+                startActivity(Intent.createChooser(intent, System.currentTimeMillis().toString()))
                 return true
             }
             R.id.action_cat -> {
