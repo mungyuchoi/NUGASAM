@@ -55,7 +55,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         public void onClick(View view) {
             if (((MainActivity) mActivity).isInActionMode()) {
                 User user = ((MainActivity) mActivity).getUser(getAdapterPosition());
-                Log.d("MQ!", "onCiick view:" + view + ", selectUserName: " + user.name + ", myName: " + myName);
+                Log.d("MyAdapter", "onCiick view:" + view + ", selectUserName: " + user.name + ", myName: " + myName);
                 if (user.name.equals(myName) || user.fullName.equals((myName))) {
                     Toast.makeText(mActivity, "본인은 선택할 수 없습니다.", Toast.LENGTH_LONG).show();
                     return;

@@ -12,6 +12,7 @@ import android.net.Uri
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
+import androidx.appcompat.app.AlertDialog
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.*
 import java.util.ArrayList
@@ -26,6 +27,7 @@ import com.kongzue.dialog.listener.InputDialogOkButtonClickListener
 import com.kongzue.dialog.v2.InputDialog
 import com.kongzue.dialog.v2.SelectDialog
 import com.moon.nugasam.data.User
+import com.moon.nugasam.update.ForceUpdateChecker
 import kotlinx.android.synthetic.main.content_main.*
 import java.util.HashMap
 
@@ -70,7 +72,29 @@ class MainActivity : AppCompatActivity() {
             loadFirebaseData()
         }
         progress = findViewById(R.id.refresh)
+
+        ForceUpdateChecker.with(this).onUpdateNeeded(ForceUpdateChecker.OnUpdateNeededListener {
+            Log.d("MQ!", "updateNeedListener $this")
+            val dialog = AlertDialog.Builder(this)
+                .setTitle("강제 업데이트")
+                .setMessage("업데이트는 필수입니다.")
+                .setPositiveButton(
+                    "Update"
+                ) { _, _ -> redirectStore(it) }
+//                  .setNegativeButton(
+//                        "No, thanks"
+//                    ) { _, _ -> finish() }.create()
+            dialog.setCancelable(false)
+            dialog.show()
+        }).check()
     }
+
+    private fun redirectStore(updateUrl: String) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(updateUrl))
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
+    }
+
 
     override fun onBackPressed() {
         if (isInActionMode) {

@@ -6,6 +6,8 @@ apply plugin: 'kotlin-android-extensions'
 
 apply plugin: 'com.google.gms.google-services'
 
+com.google.gms.googleservices.GoogleServicesPlugin.config.disableVersionCheck = true
+
 android {
     compileSdkVersion 28
     defaultConfig {
@@ -44,6 +46,7 @@ dependencies {
     implementation 'com.kongzue.dialog:dialog:2.4.8'
     implementation 'com.airbnb.android:lottie:3.0.0'
     implementation 'com.github.bumptech.glide:glide:4.9.0'
+    implementation 'com.google.firebase:firebase-config:16.3.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.9.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.1.0-alpha4'
