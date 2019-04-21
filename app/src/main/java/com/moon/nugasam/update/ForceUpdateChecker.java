@@ -35,13 +35,13 @@ public class ForceUpdateChecker {
     public void check() {
         final FirebaseRemoteConfig remoteConfig = FirebaseRemoteConfig.getInstance();
 
-        Log.d("MQ!", "cehck KEY_UPDATE_REQUIRED: " + remoteConfig.getBoolean(KEY_UPDATE_REQUIRED) + ", KEY_CURRENT_VERSION : " + remoteConfig.getString(KEY_CURRENT_VERSION)
+        Log.d(TAG, "cehck KEY_UPDATE_REQUIRED: " + remoteConfig.getBoolean(KEY_UPDATE_REQUIRED) + ", KEY_CURRENT_VERSION : " + remoteConfig.getString(KEY_CURRENT_VERSION)
                 + ", KEY_UPDATE_URL: " + KEY_UPDATE_URL);
         if (remoteConfig.getBoolean(KEY_UPDATE_REQUIRED)) {
             String currentVersion = remoteConfig.getString(KEY_CURRENT_VERSION);
             String appVersion = getAppVersion(context);
             String updateUrl = remoteConfig.getString(KEY_UPDATE_URL);
-            Log.d("MQ!", "check appVersion" + appVersion +", onUpdateNeededListener" +onUpdateNeededListener);
+            Log.d(TAG, "check appVersion" + appVersion +", onUpdateNeededListener" +onUpdateNeededListener);
             if (!TextUtils.equals(currentVersion, appVersion)
                     && onUpdateNeededListener != null) {
                 onUpdateNeededListener.onUpdateNeeded(updateUrl);

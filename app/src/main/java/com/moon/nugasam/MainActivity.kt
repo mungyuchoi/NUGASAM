@@ -20,12 +20,10 @@ import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieAnimationView
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.ValueEventListener
-import com.kongzue.dialog.listener.InputDialogOkButtonClickListener
-import com.kongzue.dialog.v2.InputDialog
 import com.kongzue.dialog.v2.SelectDialog
+import com.moon.nugasam.data.UndoData
 import com.moon.nugasam.data.User
 import com.moon.nugasam.update.ForceUpdateChecker
 import kotlinx.android.synthetic.main.content_main.*
@@ -76,11 +74,11 @@ class MainActivity : AppCompatActivity() {
         ForceUpdateChecker.with(this).onUpdateNeeded(ForceUpdateChecker.OnUpdateNeededListener {
             Log.d("MQ!", "updateNeedListener $this")
             val dialog = AlertDialog.Builder(this)
-                .setTitle("강제 업데이트")
-                .setMessage("업데이트는 필수입니다.")
-                .setPositiveButton(
-                    "Update"
-                ) { _, _ -> redirectStore(it) }
+                    .setTitle("강제 업데이트")
+                    .setMessage("업데이트는 필수입니다.")
+                    .setPositiveButton(
+                            "Update"
+                    ) { _, _ -> redirectStore(it) }
 //                  .setNegativeButton(
 //                        "No, thanks"
 //                    ) { _, _ -> finish() }.create()
@@ -134,7 +132,6 @@ class MainActivity : AppCompatActivity() {
         return datas.get(position)
     }
 
-
     fun updateViewCounter() {
         selectionList?.apply {
             var counter = size
@@ -162,8 +159,8 @@ class MainActivity : AppCompatActivity() {
         when (item.itemId) {
             R.id.action_profile -> {
                 var intent = Intent(
-                    this@MainActivity,
-                    GoogleSignInActivity::class.java
+                        this@MainActivity,
+                        GoogleSignInActivity::class.java
                 )
                 intent.putExtra("name", me?.name)
                 startActivity(intent)
@@ -275,33 +272,48 @@ class MainActivity : AppCompatActivity() {
                 }
                 return true
             }
+            R.id.action_undo -> {
+                startActivity(Intent(
+                        this@MainActivity,
+                        UndoActivity::class.java))
+                return true
+            }
             R.id.item_done -> {
                 Log.d(TAG, "done clicked selectionList:$selectionList")
                 SelectDialog.build(
-                    this@MainActivity, "정말 샀나요?", "", "샀음", DialogInterface.OnClickListener { dialog, inputText ->
-                        var ref = FirebaseDatabase.getInstance().getReference()
-                        val childUpdates = HashMap<String, Any>()
-                        for (user in selectionList) {
-                            var key = getKey(user)
-                            user.nuga += -1
-                            me?.let {
-                                it.nuga += 1
-                            }
-                            Log.d(TAG, "key:$key")
-                            childUpdates.put("/users/" + key, user)
-
+                        this@MainActivity, "정말 샀나요?", "", "샀음", DialogInterface.OnClickListener { dialog, inputText ->
+                    var ref = FirebaseDatabase.getInstance().getReference()
+                    var undoRef = FirebaseDatabase.getInstance().getReference().child("history").push()
+                    var undoData = UndoData()
+                    undoData.me = me
+                    undoData.date = System.currentTimeMillis().toString()
+                    var who = ArrayList<User>()
+                    val childUpdates = HashMap<String, Any>()
+                    for (user in selectionList) {
+                        var key = getKey(user)
+                        user.nuga += -1
+                        me?.let {
+                            it.nuga += 1
                         }
-                        Log.i(TAG, "done me : $me")
-                        me?.let { childUpdates.put("/users/" + getKey(me!!), it) }
-                        Log.i(TAG, "done childUpdates: $childUpdates")
-                        ref.updateChildren(childUpdates)
-                        clearActionMode()
-                        myAdapter?.notifyDataSetChanged()
-                        dialog.dismiss()
-                    }, "취소", DialogInterface.OnClickListener { dialog, which ->
-                        dialog.dismiss()
-                        clearActionMode()
-                    }).apply {
+                        Log.d(TAG, "key:$key")
+                        who.add(user)
+                        childUpdates.put("/users/" + key, user)
+                    }
+                    Log.i(TAG, "done me : $me")
+                    me?.let { childUpdates.put("/users/" + getKey(me!!), it) }
+                    Log.i(TAG, "done childUpdates: $childUpdates")
+                    ref.updateChildren(childUpdates)
+
+                    undoData.who = who
+                    undoRef.setValue(undoData)
+
+                    clearActionMode()
+                    myAdapter?.notifyDataSetChanged()
+                    dialog.dismiss()
+                }, "취소", DialogInterface.OnClickListener { dialog, which ->
+                    dialog.dismiss()
+                    clearActionMode()
+                }).apply {
                     setDialogStyle(1)
                     showDialog()
                 }
@@ -335,9 +347,9 @@ class MainActivity : AppCompatActivity() {
     fun loadFirebaseData() {
         if (query == null) {
             query =
-                FirebaseDatabase.getInstance().getReference().child("users").orderByChild(reorder!!).apply {
-                    addValueEventListener(postListener)
-                }
+                    FirebaseDatabase.getInstance().getReference().child("users").orderByChild(reorder!!).apply {
+                        addValueEventListener(postListener)
+                    }
         } else {
             query?.removeEventListener(postListener)
             query = FirebaseDatabase.getInstance().getReference().child("users").orderByChild(reorder!!).apply {

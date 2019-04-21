@@ -86,32 +86,45 @@ class SplashActivity : AppCompatActivity() {
                 if (task.isSuccessful) {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "signInWithCredential:success")
+                    val pref = applicationContext.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+                    Log.d(TAG, "name: " + pref.getString("name", "unknown"))
+                    if (pref.getString("name", "unknown").equals("unknown")) {
+                        InputDialog.build(
+                            this@SplashActivity,
+                            "이름을 입력해주세요.", "채팅방에서 사용할 이름을 입력해주세요", "완료",
+                            InputDialogOkButtonClickListener { dialog, inputText ->
+                                dialog.dismiss()
+                                val pref = applicationContext.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+                                val editor = pref.edit()
+                                editor.putString("name", mAuth.currentUser?.displayName)
+                                editor.putString("image", mAuth.currentUser?.photoUrl.toString())
+                                editor.commit()
 
-                    InputDialog.build(
-                        this@SplashActivity,
-                        "이름을 입력해주세요.", "채팅방에서 사용할 이름을 입력해주세요", "완료",
-                        InputDialogOkButtonClickListener { dialog, inputText ->
-                            dialog.dismiss()
-                            val pref = applicationContext.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
-                            val editor = pref.edit()
-                            editor.putString("name", mAuth.currentUser?.displayName)
-                            editor.putString("image", mAuth.currentUser?.photoUrl.toString())
-                            editor.commit()
+                                Log.d(TAG, "name: $inputText")
+                                startMainActivity()
 
-                            Log.d(TAG, "name: $inputText")
-                            startMainActivity()
-
-                            // TODO 이때 DB에 inputText이름으로 0값으로 새롭게 추가한다!
-                            var usersRef = FirebaseDatabase.getInstance().getReference().child("users").push()
-                            usersRef.setValue(User(inputText, 0, mAuth.currentUser?.photoUrl.toString(),mAuth.currentUser?.displayName!!))
-                        }, "취소", DialogInterface.OnClickListener { dialog, which ->
-                            dialog.dismiss()
-                            finish()
-                        }).apply {
-                        setDialogStyle(1)
-                        setDefaultInputHint(mAuth.currentUser?.displayName)
-                        showDialog()
+                                // TODO 이때 DB에 inputText이름으로 0값으로 새롭게 추가한다!
+                                var usersRef = FirebaseDatabase.getInstance().getReference().child("users").push()
+                                usersRef.setValue(
+                                    User(
+                                        inputText,
+                                        0,
+                                        mAuth.currentUser?.photoUrl.toString(),
+                                        mAuth.currentUser?.displayName!!
+                                    )
+                                )
+                            }, "취소", DialogInterface.OnClickListener { dialog, which ->
+                                dialog.dismiss()
+                                finish()
+                            }).apply {
+                            setDialogStyle(1)
+                            setDefaultInputHint(mAuth.currentUser?.displayName)
+                            showDialog()
+                        }
+                    } else {
+                        startMainActivity()
                     }
+
                 } else {
                     // If sign in fails, display a message to the user.
                     Log.w(TAG, "signInWithCredential:failure", task.exception)
