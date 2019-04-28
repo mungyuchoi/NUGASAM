@@ -60,6 +60,27 @@ public class UndoAdapter extends RecyclerView.Adapter<UndoAdapter.ViewHolder> {
         ImageView mImageView5;
         TextView mTitleView5;
 
+        View mItem6;
+        ImageView mImageView6;
+        TextView mTitleView6;
+
+        View mItem7;
+        ImageView mImageView7;
+        TextView mTitleView7;
+
+        View mItem8;
+        ImageView mImageView8;
+        TextView mTitleView8;
+
+        View mItem9;
+        ImageView mImageView9;
+        TextView mTitleView9;
+
+
+        View mItem10;
+        ImageView mImageView10;
+        TextView mTitleView10;
+
         ViewHolder(View v) {
             super(v);
             mDateView = v.findViewById(R.id.date);
@@ -76,12 +97,27 @@ public class UndoAdapter extends RecyclerView.Adapter<UndoAdapter.ViewHolder> {
             mTitleView4 = v.findViewById(R.id.title4);
             mImageView5 = v.findViewById(R.id.thumbnail5);
             mTitleView5 = v.findViewById(R.id.title5);
+            mImageView6 = v.findViewById(R.id.thumbnail6);
+            mTitleView6 = v.findViewById(R.id.title6);
+            mImageView7 = v.findViewById(R.id.thumbnail7);
+            mTitleView7 = v.findViewById(R.id.title7);
+            mImageView8 = v.findViewById(R.id.thumbnail8);
+            mTitleView8 = v.findViewById(R.id.title8);
+            mImageView9 = v.findViewById(R.id.thumbnail9);
+            mTitleView9 = v.findViewById(R.id.title9);
+            mImageView10 = v.findViewById(R.id.thumbnail10);
+            mTitleView10 = v.findViewById(R.id.title10);
 
             mItem1 = v.findViewById(R.id.item1);
             mItem2 = v.findViewById(R.id.item2);
             mItem3 = v.findViewById(R.id.item3);
             mItem4 = v.findViewById(R.id.item4);
             mItem5 = v.findViewById(R.id.item5);
+            mItem6 = v.findViewById(R.id.item6);
+            mItem7 = v.findViewById(R.id.item7);
+            mItem8 = v.findViewById(R.id.item8);
+            mItem9 = v.findViewById(R.id.item9);
+            mItem10 = v.findViewById(R.id.item10);
             v.setOnLongClickListener(this);
         }
 
@@ -196,6 +232,21 @@ public class UndoAdapter extends RecyclerView.Adapter<UndoAdapter.ViewHolder> {
             case 4:
                 item = holder.mItem5;
                 break;
+            case 5:
+                item = holder.mItem6;
+                break;
+            case 6:
+                item = holder.mItem7;
+                break;
+            case 7:
+                item = holder.mItem8;
+                break;
+            case 8:
+                item = holder.mItem9;
+                break;
+            case 9:
+                item = holder.mItem10;
+                break;
         }
         return item;
     }
@@ -218,6 +269,21 @@ public class UndoAdapter extends RecyclerView.Adapter<UndoAdapter.ViewHolder> {
             case 4:
                 textView = holder.mTitleView5;
                 break;
+            case 5:
+                textView = holder.mTitleView6;
+                break;
+            case 6:
+                textView = holder.mTitleView7;
+                break;
+            case 7:
+                textView = holder.mTitleView8;
+                break;
+            case 8:
+                textView = holder.mTitleView9;
+                break;
+            case 9:
+                textView = holder.mTitleView10;
+                break;
         }
         return textView;
     }
@@ -239,6 +305,21 @@ public class UndoAdapter extends RecyclerView.Adapter<UndoAdapter.ViewHolder> {
                 break;
             case 4:
                 imageView = holder.mImageView5;
+                break;
+            case 5:
+                imageView = holder.mImageView6;
+                break;
+            case 6:
+                imageView = holder.mImageView7;
+                break;
+            case 7:
+                imageView = holder.mImageView8;
+                break;
+            case 8:
+                imageView = holder.mImageView9;
+                break;
+            case 9:
+                imageView = holder.mImageView10;
                 break;
         }
         return imageView;

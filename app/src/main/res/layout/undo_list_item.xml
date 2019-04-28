@@ -154,6 +154,116 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"/>
             </LinearLayout>
+
+            <LinearLayout
+                    android:id="@+id/item6"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                <ImageView
+                        android:id="@+id/thumbnail6"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:contentDescription="@string/action_profile"
+                        android:src="@mipmap/ic_launcher"
+                        android:padding="8dp"/>
+
+                <TextView
+                        android:id="@+id/title6"
+                        android:layout_width="110dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"/>
+            </LinearLayout>
+
+            <LinearLayout
+                    android:id="@+id/item7"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                <ImageView
+                        android:id="@+id/thumbnail7"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:contentDescription="@string/action_profile"
+                        android:src="@mipmap/ic_launcher"
+                        android:padding="8dp"/>
+
+                <TextView
+                        android:id="@+id/title7"
+                        android:layout_width="110dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"/>
+            </LinearLayout>
+
+            <LinearLayout
+                    android:id="@+id/item8"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                <ImageView
+                        android:id="@+id/thumbnail8"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:contentDescription="@string/action_profile"
+                        android:src="@mipmap/ic_launcher"
+                        android:padding="8dp"/>
+
+                <TextView
+                        android:id="@+id/title8"
+                        android:layout_width="110dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"/>
+            </LinearLayout>
+
+            <LinearLayout
+                    android:id="@+id/item9"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                <ImageView
+                        android:id="@+id/thumbnail9"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:contentDescription="@string/action_profile"
+                        android:src="@mipmap/ic_launcher"
+                        android:padding="8dp"/>
+
+                <TextView
+                        android:id="@+id/title9"
+                        android:layout_width="110dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"/>
+            </LinearLayout>
+
+            <LinearLayout
+                    android:id="@+id/item10"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                <ImageView
+                        android:id="@+id/thumbnail10"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:contentDescription="@string/action_profile"
+                        android:src="@mipmap/ic_launcher"
+                        android:padding="8dp"/>
+
+                <TextView
+                        android:id="@+id/title10"
+                        android:layout_width="110dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"/>
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 
