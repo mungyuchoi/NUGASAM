@@ -15,7 +15,7 @@ android {
         minSdkVersion 22
         targetSdkVersion 28
         versionCode 5
-        versionName "1.5"
+        versionName "1.6"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         renderscriptTargetApi 19
@@ -44,6 +44,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-database:16.1.0'
     implementation 'com.google.firebase:firebase-config:16.5.0'
     implementation 'com.google.firebase:firebase-auth:16.2.1'
+    implementation 'com.google.firebase:firebase-messaging:17.6.0'
+
 
     implementation 'com.google.android.gms:play-services-auth:16.0.1'
     implementation 'com.kongzue.dialog:dialog:2.4.8'

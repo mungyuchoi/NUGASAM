@@ -41,7 +41,7 @@ public class ForceUpdateChecker {
             String currentVersion = remoteConfig.getString(KEY_CURRENT_VERSION);
             String appVersion = getAppVersion(context);
             String updateUrl = remoteConfig.getString(KEY_UPDATE_URL);
-            Log.d(TAG, "check appVersion" + appVersion +", onUpdateNeededListener" +onUpdateNeededListener);
+            Log.d(TAG, "check appVersion: " + appVersion +", onUpdateNeededListener: " +onUpdateNeededListener);
             if (!TextUtils.equals(currentVersion, appVersion)
                     && onUpdateNeededListener != null) {
                 onUpdateNeededListener.onUpdateNeeded(updateUrl);
