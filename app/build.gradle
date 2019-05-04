@@ -14,7 +14,7 @@ android {
         applicationId "com.moon.nugasam"
         minSdkVersion 22
         targetSdkVersion 28
-        versionCode 5
+        versionCode 6
         versionName "1.6"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -46,6 +46,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth:16.2.1'
     implementation 'com.google.firebase:firebase-messaging:17.6.0'
 
+    implementation 'com.google.android.gms:play-services-ads:17.2.0'
 
     implementation 'com.google.android.gms:play-services-auth:16.0.1'
     implementation 'com.kongzue.dialog:dialog:2.4.8'

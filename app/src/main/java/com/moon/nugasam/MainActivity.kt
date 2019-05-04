@@ -20,6 +20,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieAnimationView
+import com.google.android.gms.ads.*
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.ValueEventListener
 import com.kongzue.dialog.v2.SelectDialog
@@ -28,7 +29,6 @@ import com.moon.nugasam.data.User
 import com.moon.nugasam.update.ForceUpdateChecker
 import kotlinx.android.synthetic.main.content_main.*
 import java.util.HashMap
-
 
 class MainActivity : AppCompatActivity() {
 
@@ -41,6 +41,9 @@ class MainActivity : AppCompatActivity() {
     private var progress: LottieAnimationView? = null
     private var reorder: String? = null
     private var query: Query? = null
+
+    private lateinit var mInterstitialAd: InterstitialAd
+    private lateinit var mAdView : AdView
 
     // action mode
     var isInActionMode = false
@@ -71,6 +74,27 @@ class MainActivity : AppCompatActivity() {
         }
         progress = findViewById(R.id.refresh)
 
+        // ads
+        MobileAds.initialize(this,
+            "ca-app-pub-8549606613390169~4634260996")
+
+        mInterstitialAd = InterstitialAd(this)
+       // mInterstitialAd.adUnitId = "ca-app-pub-8549606613390169/5541870755"
+        // for test
+        mInterstitialAd.adUnitId = "ca-app-pub-3940256099942544/1033173712"
+        mInterstitialAd.loadAd(AdRequest.Builder().build())
+        mInterstitialAd.adListener = object: AdListener(){
+            override fun onAdClosed() {
+                super.onAdClosed()
+                finish()
+                Log.d("MQ!", "onAdClosed")
+            }
+        }
+        mAdView = findViewById(R.id.adView)
+        val adRequest = AdRequest.Builder().build()
+        mAdView.loadAd(adRequest)
+
+
         ForceUpdateChecker.with(this).onUpdateNeeded(ForceUpdateChecker.OnUpdateNeededListener {
             Log.d("MQ!", "updateNeedListener $this")
             val dialog = AlertDialog.Builder(this)
@@ -99,7 +123,12 @@ class MainActivity : AppCompatActivity() {
             clearActionMode()
             myAdapter?.notifyDataSetChanged()
         } else {
-            super.onBackPressed()
+            if (mInterstitialAd.isLoaded) {
+                mInterstitialAd.show()
+            } else {
+                Log.d(TAG, "The interstitial wasn't loaded yet.")
+                super.onBackPressed()
+            }
         }
     }
 

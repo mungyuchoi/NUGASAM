@@ -102,6 +102,7 @@
 
     <string name="done">Done</string>
 
+    <string name="admob_app_id">ca-app-pub-8549606613390169~4634260996</string>
     <string name="default_notification_channel_id" translatable="false">fcm_default_channel</string>
     <string name="default_notification_channel_name" translatable="true">Weather</string>
 </resources>
