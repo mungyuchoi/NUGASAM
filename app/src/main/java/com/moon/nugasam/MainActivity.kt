@@ -12,6 +12,7 @@ import android.net.Uri
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.*
@@ -21,6 +22,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieAnimationView
 import com.google.android.gms.ads.*
+import com.google.android.gms.ads.reward.RewardItem
+import com.google.android.gms.ads.reward.RewardedVideoAd
+import com.google.android.gms.ads.reward.RewardedVideoAdListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.ValueEventListener
 import com.kongzue.dialog.v2.SelectDialog
@@ -42,7 +46,9 @@ class MainActivity : AppCompatActivity() {
     private var reorder: String? = null
     private var query: Query? = null
 
+    // ads
     private lateinit var mInterstitialAd: InterstitialAd
+    private lateinit var mRewardedVideoAd: RewardedVideoAd
     private lateinit var mAdView : AdView
 
     // action mode
@@ -74,27 +80,10 @@ class MainActivity : AppCompatActivity() {
         }
         progress = findViewById(R.id.refresh)
 
-        // ads
-        MobileAds.initialize(this,
-            "ca-app-pub-8549606613390169~4634260996")
 
-        mInterstitialAd = InterstitialAd(this)
-        mInterstitialAd.adUnitId = "ca-app-pub-8549606613390169/5541870755"
-        mInterstitialAd.loadAd(AdRequest.Builder().build())
-        mInterstitialAd.adListener = object: AdListener(){
-            override fun onAdClosed() {
-                super.onAdClosed()
-                finish()
-                Log.d("MQ!", "onAdClosed")
-            }
-        }
-        mAdView = findViewById(R.id.adView)
-        val adRequest = AdRequest.Builder().build()
-        mAdView.loadAd(adRequest)
-
-
+        initAds()
         ForceUpdateChecker.with(this).onUpdateNeeded(ForceUpdateChecker.OnUpdateNeededListener {
-            Log.d("MQ!", "updateNeedListener $this")
+            Log.d(TAG, "updateNeedListener $this")
             val dialog = AlertDialog.Builder(this)
                 .setTitle("강제 업데이트")
                 .setMessage("업데이트는 필수입니다.")
@@ -107,6 +96,93 @@ class MainActivity : AppCompatActivity() {
             dialog.setCancelable(false)
             dialog.show()
         }).check()
+    }
+
+    private fun initAds() {
+        MobileAds.initialize(this, "ca-app-pub-8549606613390169~4634260996")
+
+        mInterstitialAd = InterstitialAd(this).apply {
+            //real
+            adUnitId = "ca-app-pub-8549606613390169/6850123505"
+            loadAd(AdRequest.Builder().build())
+
+            //test
+           // adUnitId = "ca-app-pub-8549606613390169/6850123505"
+            //loadAd(AdRequest.Builder().addTestDevice("ABEBCC8921F3ABA283C084A2954D0CAE").build())
+
+            adListener = (object : AdListener() {
+                override fun onAdLoaded() {
+                    super.onAdLoaded()
+                    Log.d(TAG, "onAdLoaded 전면 성공")
+                }
+
+                override fun onAdFailedToLoad(errorCode: Int) {
+                    Log.d(TAG, "onAdFailedToLoad 전면 errorCode:$errorCode")
+                }
+                override fun onAdClosed() {
+                    super.onAdClosed()
+                    finish()
+                }
+            })
+        }
+
+        // Use an activity context to get the rewarded video instance.
+        mRewardedVideoAd = MobileAds.getRewardedVideoAdInstance(this)
+        mRewardedVideoAd.rewardedVideoAdListener = object : RewardedVideoAdListener {
+            override fun onRewardedVideoAdClosed() {
+                Log.d(TAG, "onRewardedVideoAdClosed")
+            }
+
+            override fun onRewardedVideoAdLeftApplication() {
+                Log.d(TAG, "onRewardedVideoAdLeftApplication")
+            }
+
+            override fun onRewardedVideoAdLoaded() {
+                Log.d(TAG, "onRewardedVideoAdLoaded")
+            }
+
+            override fun onRewardedVideoAdOpened() {
+                Log.d(TAG, "onRewardedVideoAdOpened")
+            }
+
+            override fun onRewardedVideoCompleted() {
+                Log.d(TAG, "onRewardedVideoCompleted")
+            }
+
+            override fun onRewarded(p0: RewardItem?) {
+                Log.d(TAG, "onRewarded item:$p0")
+            }
+
+            override fun onRewardedVideoStarted() {
+                Log.d(TAG, "onRewardedVideoStarted")
+            }
+
+            override fun onRewardedVideoAdFailedToLoad(p0: Int) {
+                Log.d(TAG, "onRewardedVideoAdFailedToLoad error:$p0")
+            }
+        }
+        mRewardedVideoAd.loadAd(
+         // test  "ca-app-pub-3940256099942544/5224354917",
+            "ca-app-pub-8549606613390169/3243202369",
+            AdRequest.Builder().addTestDevice("ABEBCC8921F3ABA283C084A2954D0CAE").build()
+        )
+
+        mAdView = findViewById(R.id.adView)
+       // val adRequest = AdRequest.Builder().addTestDevice("ABEBCC8921F3ABA283C084A2954D0CAE").build()
+        val adRequest = AdRequest.Builder().build()
+        mAdView.loadAd(adRequest)
+        mAdView.adListener = (object : AdListener() {
+
+            override fun onAdLoaded() {
+                super.onAdLoaded()
+                Log.d(TAG, "onAdLoaded 배너 성공")
+            }
+
+            override fun onAdFailedToLoad(errorCode: Int) {
+                super.onAdFailedToLoad(errorCode)
+                Log.d(TAG, "onAdFailedToLoad 배너 errorCode:$errorCode")
+            }
+        })
     }
 
     private fun redirectStore(updateUrl: String) {
@@ -213,17 +289,22 @@ class MainActivity : AppCompatActivity() {
                 return true
             }
             R.id.action_refresh -> {
-                progress?.visibility = View.VISIBLE
-                FirebaseDatabase.getInstance().getReference().child("users").orderByChild(reorder!!).apply {
-                    addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onCancelled(p0: DatabaseError) {
-                        }
+                if (mRewardedVideoAd.isLoaded) {
+                    mRewardedVideoAd.show()
+                }
+                else {
+                    progress?.visibility = View.VISIBLE
+                    FirebaseDatabase.getInstance().getReference().child("users").orderByChild(reorder!!).apply {
+                        addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onCancelled(p0: DatabaseError) {
+                            }
 
-                        override fun onDataChange(dataSnapshot: DataSnapshot) {
-                            updateUI(dataSnapshot)
-                            progress?.visibility = View.INVISIBLE
-                        }
-                    })
+                            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                                updateUI(dataSnapshot)
+                                progress?.visibility = View.INVISIBLE
+                            }
+                        })
+                    }
                 }
                 return true
             }
@@ -236,55 +317,55 @@ class MainActivity : AppCompatActivity() {
                 share()
                 return true
             }
-            R.id.action_cat -> {
-                refresh?.let {
-                    it.visibility = View.VISIBLE
-                    it.repeatCount = 1
-                    it.setAnimation(R.raw.cat)
-                    it.playAnimation()
-                    it.addAnimatorListener(object : Animator.AnimatorListener {
-                        override fun onAnimationRepeat(animation: Animator?) {
-                        }
-
-                        override fun onAnimationCancel(animation: Animator?) {
-                        }
-
-                        override fun onAnimationStart(animation: Animator?) {
-                        }
-
-                        override fun onAnimationEnd(animation: Animator?) {
-                            it.visibility = View.INVISIBLE
-                        }
-                    })
-
-                }
-                return true
-            }
-            R.id.action_deer -> {
-                refresh?.let {
-                    it.visibility = View.VISIBLE
-                    it.repeatCount = 1
-                    it.setAnimation(R.raw.deer)
-                    it.scaleType = ImageView.ScaleType.FIT_CENTER
-                    it.playAnimation()
-                    it.addAnimatorListener(object : Animator.AnimatorListener {
-                        override fun onAnimationRepeat(animation: Animator?) {
-                        }
-
-                        override fun onAnimationCancel(animation: Animator?) {
-                        }
-
-                        override fun onAnimationStart(animation: Animator?) {
-                        }
-
-                        override fun onAnimationEnd(animation: Animator?) {
-                            it.visibility = View.INVISIBLE
-                        }
-                    })
-
-                }
-                return true
-            }
+//            R.id.action_cat -> {
+//                refresh?.let {
+//                    it.visibility = View.VISIBLE
+//                    it.repeatCount = 1
+//                    it.setAnimation(R.raw.cat)
+//                    it.playAnimation()
+//                    it.addAnimatorListener(object : Animator.AnimatorListener {
+//                        override fun onAnimationRepeat(animation: Animator?) {
+//                        }
+//
+//                        override fun onAnimationCancel(animation: Animator?) {
+//                        }
+//
+//                        override fun onAnimationStart(animation: Animator?) {
+//                        }
+//
+//                        override fun onAnimationEnd(animation: Animator?) {
+//                            it.visibility = View.INVISIBLE
+//                        }
+//                    })
+//
+//                }
+//                return true
+//            }
+//            R.id.action_deer -> {
+//                refresh?.let {
+//                    it.visibility = View.VISIBLE
+//                    it.repeatCount = 1
+//                    it.setAnimation(R.raw.deer)
+//                    it.scaleType = ImageView.ScaleType.FIT_CENTER
+//                    it.playAnimation()
+//                    it.addAnimatorListener(object : Animator.AnimatorListener {
+//                        override fun onAnimationRepeat(animation: Animator?) {
+//                        }
+//
+//                        override fun onAnimationCancel(animation: Animator?) {
+//                        }
+//
+//                        override fun onAnimationStart(animation: Animator?) {
+//                        }
+//
+//                        override fun onAnimationEnd(animation: Animator?) {
+//                            it.visibility = View.INVISIBLE
+//                        }
+//                    })
+//
+//                }
+//                return true
+//            }
             R.id.action_undo -> {
                 startActivity(
                     Intent(
@@ -434,7 +515,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-        private val TAG = "MainActivity"
+        private val TAG = "MainActivityMQ!"
     }
 
 }
