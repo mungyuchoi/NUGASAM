@@ -5,6 +5,7 @@ public class User {
     public Integer nuga;
     public String imageUrl;
     public String fullName;
+    public Integer permission;
 
     public User(){}
 
@@ -13,5 +14,6 @@ public class User {
         this.nuga = nuga;
         this.imageUrl = imageUrl;
         this.fullName = fullName;
+        this.permission = 0;
     }
 }

@@ -1,9 +1,10 @@
-package com.moon.nugasam.application
+package com.moon.nugasam
 
 import android.app.Application
 import android.util.Log
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.moon.nugasam.update.ForceUpdateChecker
+import com.facebook.stetho.Stetho
 
 class NugasamApplication : Application() {
 
@@ -11,6 +12,7 @@ class NugasamApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        Stetho.initializeWithDefaults(this)
 
         val firebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
 

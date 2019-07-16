@@ -13,6 +13,7 @@
     <string name="action_share">공유</string>
     <string name="action_undo">되돌리기</string>
     <string name="action_qna">문의하기</string>
+    <string name="action_manager">관리자</string>
     <string name="action_refresh">Refresh</string>
 
     <string name="label_google_sign_in">Firebase + Google Sign In</string>

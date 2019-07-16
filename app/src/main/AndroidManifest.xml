@@ -11,7 +11,7 @@
             android:label="@string/app_name"
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
-            android:name=".application.NugasamApplication"
+            android:name=".NugasamApplication"
             android:theme="@style/AppTheme">
         <!-- [START fcm_default_icon] -->
         <!-- Set custom default icon. This is used when no icon is set for incoming notification messages.
@@ -38,11 +38,7 @@
         <activity
                 android:name=".SplashActivity"
                 android:theme="@style/AppTheme.TransparentTheme">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
 
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
         </activity>
         <activity
                 android:name="com.google.android.gms.ads.AdActivity"
