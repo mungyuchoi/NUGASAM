@@ -49,7 +49,7 @@ class UndoActivity : AppCompatActivity() {
 
     fun loadFirebaseData() {
         var query =
-            FirebaseDatabase.getInstance().getReference().child("history").orderByChild("date").limitToLast(20).apply {
+            FirebaseDatabase.getInstance().getReference().child("history").orderByChild("date").limitToLast(10).apply {
                 var postListener = object : ValueEventListener {
                     override fun onDataChange(dataSnapshot: DataSnapshot) {
                         updateUI(dataSnapshot)

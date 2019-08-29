@@ -118,7 +118,7 @@ public class UndoAdapter extends RecyclerView.Adapter<UndoAdapter.ViewHolder> {
             mItem8 = v.findViewById(R.id.item8);
             mItem9 = v.findViewById(R.id.item9);
             mItem10 = v.findViewById(R.id.item10);
-            v.setOnLongClickListener(this);
+           // v.setOnLongClickListener(this);
         }
 
         @Override
@@ -193,8 +193,10 @@ public class UndoAdapter extends RecyclerView.Adapter<UndoAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull UndoAdapter.ViewHolder holder, int position) {
+        if (mDataset.size() == 0) {
+            return;
+        }
         UndoData model = mDataset.get(position);
-
         holder.mDateView.setText(DateFormat.getInstance().format(Long.parseLong(model.date)));
         Glide.with(mActivity).load(model.me.imageUrl).apply(RequestOptions.circleCropTransform()).into(holder.mImageView);
         holder.mTitleView.setText(model.me.name);

@@ -11,7 +11,7 @@
     <string name="action_deer">깨애엨</string>
     <string name="action_reorder">정렬</string>
     <string name="action_share">공유</string>
-    <string name="action_undo">되돌리기</string>
+    <string name="action_undo">히스토리</string>
     <string name="action_qna">문의하기</string>
     <string name="action_manager">관리자</string>
     <string name="action_refresh">Refresh</string>
