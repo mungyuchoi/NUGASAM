@@ -19,12 +19,23 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieAnimationView
 import com.google.android.gms.ads.*
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.ValueEventListener
+import com.kongzue.dialog.listener.InputDialogOkButtonClickListener
+import com.kongzue.dialog.v2.InputDialog
 import com.kongzue.dialog.v2.SelectDialog
 import com.moon.nugasam.data.UndoData
 import com.moon.nugasam.data.User
 import com.moon.nugasam.update.ForceUpdateChecker
+import kotlinx.android.synthetic.main.activity_google.*
 import java.util.HashMap
 
 class MainActivity : AppCompatActivity() {
@@ -40,7 +51,11 @@ class MainActivity : AppCompatActivity() {
     private var query: Query? = null
 
     // ads
-    private lateinit var mAdView : AdView
+    private lateinit var mAdView: AdView
+
+    // auth
+    private lateinit var mAuth: FirebaseAuth
+    private lateinit var mGoogleSignInClient: GoogleSignInClient
 
     // action mode
     var isInActionMode = false
@@ -72,6 +87,7 @@ class MainActivity : AppCompatActivity() {
         progress = findViewById(R.id.refresh)
 
 
+        checkFirebaseAuth()
         //initAds()
         ForceUpdateChecker.with(this).onUpdateNeeded(ForceUpdateChecker.OnUpdateNeededListener {
             Log.d(TAG, "updateNeedListener $this")
@@ -84,6 +100,30 @@ class MainActivity : AppCompatActivity() {
             dialog.setCancelable(false)
             dialog.show()
         }).check()
+    }
+
+    private fun checkFirebaseAuth() {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
+        mAuth = FirebaseAuth.getInstance()
+        val currentUser = mAuth.currentUser
+        Log.d(TAG, "currentUser: $currentUser, image: ${currentUser?.photoUrl}, name: ${currentUser?.displayName} ")
+        if (currentUser == null) {
+            val signInIntent = mGoogleSignInClient.signInIntent
+            startActivityForResult(signInIntent, RC_SIGN_IN)
+        } else {
+            val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+            var name = pref.getString("name", "")
+            if (!mAuth.currentUser?.displayName.equals(name)) {
+                val editor = pref.edit()
+                editor.putString("name", mAuth.currentUser?.displayName)
+                editor.commit()
+            }
+        }
     }
 
     private fun initAds() {
@@ -105,6 +145,80 @@ class MainActivity : AppCompatActivity() {
                 Log.d(TAG, "onAdFailedToLoad 배너 errorCode:$errorCode")
             }
         })
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
+        Log.d(TAG, "onActivityResult requestCode : $requestCode")
+        if (requestCode == RC_SIGN_IN) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+            try {
+                // Google Sign In was successful, authenticate with Firebase
+                val account = task.getResult(ApiException::class.java)
+                firebaseAuthWithGoogle(account!!)
+            } catch (e: ApiException) {
+                // Google Sign In failed, update UI appropriately
+                Log.w(TAG, "Google sign in failed", e)
+                // [START_EXCLUDE]
+                finish()
+                // [END_EXCLUDE]
+            }
+        }
+    }
+
+    private fun firebaseAuthWithGoogle(acct: GoogleSignInAccount) {
+        Log.d(TAG, "firebaseAuthWithGoogle:" + acct.id!!)
+
+        val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
+        mAuth.signInWithCredential(credential)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    // Sign in success, update UI with the signed-in user's information
+                    Log.d(TAG, "signInWithCredential:success")
+                    val pref = applicationContext.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+                    Log.d(TAG, "name: " + pref.getString("name", "unknown"))
+                    if (pref.getString("name", "unknown").equals("unknown")) {
+                        InputDialog.build(
+                            this@MainActivity,
+                            "이름을 입력해주세요.", "채팅방에서 사용할 이름을 입력해주세요", "완료",
+                            InputDialogOkButtonClickListener { dialog, inputText ->
+                                dialog.dismiss()
+                                val pref = applicationContext.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+                                val editor = pref.edit()
+                                editor.putString("name", mAuth.currentUser?.displayName)
+                                editor.putString("image", mAuth.currentUser?.photoUrl.toString())
+                                editor.commit()
+
+                                Log.d(TAG, "name: $inputText")
+
+                                // TODO 이때 DB에 inputText이름으로 0값으로 새롭게 추가한다!
+                                var usersRef = FirebaseDatabase.getInstance().getReference().child("users").push()
+                                usersRef.setValue(
+                                    User(
+                                        inputText,
+                                        0,
+                                        mAuth.currentUser?.photoUrl.toString(),
+                                        mAuth.currentUser?.displayName!!
+                                    )
+                                )
+                            }, "취소", DialogInterface.OnClickListener { dialog, which ->
+                                dialog.dismiss()
+                                finish()
+                            }).apply {
+                            setDialogStyle(1)
+                            setDefaultInputHint(mAuth.currentUser?.displayName)
+                            showDialog()
+                        }
+                    }
+
+                } else {
+                    // If sign in fails, display a message to the user.
+                    Log.w(TAG, "signInWithCredential:failure", task.exception)
+                    Snackbar.make(main_layout, "Authentication Failed.", Snackbar.LENGTH_SHORT).show()
+                    finish()
+                }
+            }
     }
 
     private fun redirectStore(updateUrl: String) {
@@ -131,7 +245,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
         Log.d(TAG, "onPrepareOptionsMenu me: ${me?.permission}")
-        if(me?.permission == 1) {
+        if (me?.permission == 1) {
             menu?.getItem(6)?.setVisible(true)
         }
         return super.onPrepareOptionsMenu(menu)
@@ -394,6 +508,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private val TAG = "MainActivityMQ!"
+        private val RC_SIGN_IN = 9001
     }
 
 }
