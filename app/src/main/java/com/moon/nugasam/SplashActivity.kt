@@ -92,7 +92,7 @@ class SplashActivity : AppCompatActivity() {
                         InputDialog.build(
                             this@SplashActivity,
                             "이름을 입력해주세요.", "채팅방에서 사용할 이름을 입력해주세요", "완료",
-                            InputDialogOkButtonClickListener { dialog, inputText ->
+                            { dialog, inputText ->
                                 dialog.dismiss()
                                 val pref = applicationContext.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
                                 val editor = pref.edit()
@@ -100,20 +100,22 @@ class SplashActivity : AppCompatActivity() {
                                 editor.putString("image", mAuth.currentUser?.photoUrl.toString())
                                 editor.commit()
 
-                                Log.d(TAG, "name: $inputText")
+                                var text =
+                                    if (inputText.isNotEmpty()) inputText else mAuth.currentUser?.displayName!!
+                                Log.d(TAG, "name: $text")
                                 startMainActivity()
 
                                 // TODO 이때 DB에 inputText이름으로 0값으로 새롭게 추가한다!
                                 var usersRef = FirebaseDatabase.getInstance().getReference().child("users").push()
                                 usersRef.setValue(
                                     User(
-                                        inputText,
+                                        text,
                                         0,
                                         mAuth.currentUser?.photoUrl.toString(),
                                         mAuth.currentUser?.displayName!!
                                     )
                                 )
-                            }, "취소", DialogInterface.OnClickListener { dialog, which ->
+                            }, "취소", { dialog, which ->
                                 dialog.dismiss()
                                 finish()
                             }).apply {
