@@ -6,6 +6,7 @@ public class User {
     public String imageUrl;
     public String fullName;
     public Integer permission;
+    public Integer point;
 
     public User(){}
 
@@ -15,5 +16,6 @@ public class User {
         this.imageUrl = imageUrl;
         this.fullName = fullName;
         this.permission = 0;
+        this.point = 0;
     }
 }

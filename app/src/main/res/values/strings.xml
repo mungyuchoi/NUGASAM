@@ -15,6 +15,7 @@
     <string name="action_qna">문의하기</string>
     <string name="action_manager">관리자</string>
     <string name="action_refresh">Refresh</string>
+    <string name="action_smile">Smile</string>
 
     <string name="label_google_sign_in">Firebase + Google Sign In</string>
     <string name="desc_google_sign_in">Use a Google Sign In credential to authenticate with Firebase.</string>
@@ -102,6 +103,7 @@
     <string name="signed_out">Signed Out</string>
 
     <string name="done">Done</string>
+    <string name="point">Point</string>
 
     <string name="admob_app_id">ca-app-pub-8549606613390169~4634260996</string>
     <string name="default_notification_channel_id" translatable="false">fcm_default_channel</string>

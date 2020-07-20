@@ -10,6 +10,7 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.*
@@ -19,6 +20,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieAnimationView
 import com.google.android.gms.ads.*
+import com.google.android.gms.ads.reward.RewardItem
+import com.google.android.gms.ads.reward.RewardedVideoAd
+import com.google.android.gms.ads.reward.RewardedVideoAdListener
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -52,6 +56,7 @@ class MainActivity : AppCompatActivity() {
 
     // ads
     private lateinit var mAdView: AdView
+    private lateinit var mRewardedVideoAd: RewardedVideoAd
 
     // auth
     private lateinit var mAuth: FirebaseAuth
@@ -66,7 +71,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         FirebaseApp.initializeApp(this)
         toolbar = findViewById<Toolbar>(R.id.toolbar)?.apply {
-            setTitle(R.string.app_name)
+            updateToolbar()
         }
         setSupportActionBar(toolbar)
 
@@ -130,8 +135,7 @@ class MainActivity : AppCompatActivity() {
         MobileAds.initialize(this, "ca-app-pub-8549606613390169~4634260996")
 
         mAdView = findViewById(R.id.adView)
-//        val adRequest = AdRequest.Builder().addTestDevice("ABEBCC8921F3ABA283C084A2954D0CAE").build()
-        val adRequest = AdRequest.Builder().build()
+        val adRequest = AdRequest.Builder().addTestDevice("ABEBCC8921F3ABA283C084A2954D0CAE").build()
         mAdView.loadAd(adRequest)
         mAdView.adListener = (object : AdListener() {
 
@@ -144,7 +148,82 @@ class MainActivity : AppCompatActivity() {
                 super.onAdFailedToLoad(errorCode)
                 Log.d(TAG, "onAdFailedToLoad 배너 errorCode:$errorCode")
             }
+
+            override fun onAdOpened() {
+                super.onAdOpened()
+                Log.d(TAG, "onAdOpened 배너 열림")
+                me?.let{
+                    var ref = FirebaseDatabase.getInstance().reference
+                    val childUpdates = HashMap<String, Any>()
+                    var key = getKey(it)
+                    var point = if(it.point == null) 0 else it.point
+                    point += 1
+                    it.point = point
+                    Log.d(TAG, "onAdOpened point:$point")
+                    childUpdates["/users/$key"] = it
+                    ref.updateChildren(childUpdates)
+                    updateToolbar()
+                }
+            }
         })
+
+        // Use an activity context to get the rewarded video instance.
+        mRewardedVideoAd = MobileAds.getRewardedVideoAdInstance(this)
+        mRewardedVideoAd.rewardedVideoAdListener = object : RewardedVideoAdListener {
+            override fun onRewardedVideoAdClosed() {
+                Log.d(TAG, "onRewardedVideoAdClosed")
+                loadRewardedVideoAd()
+            }
+
+            override fun onRewardedVideoAdLeftApplication() {
+                Log.d(TAG, "onRewardedVideoAdLeftApplication")
+            }
+
+            override fun onRewardedVideoAdLoaded() {
+                Log.d(TAG, "onRewardedVideoAdLoaded")
+            }
+
+            override fun onRewardedVideoAdOpened() {
+                Log.d(TAG, "onRewardedVideoAdOpened")
+            }
+
+            override fun onRewardedVideoCompleted() {
+                Log.d(TAG, "onRewardedVideoCompleted")
+            }
+
+            override fun onRewarded(p0: RewardItem?) {
+                Log.d(TAG, "onRewarded item:$p0")
+                me?.let{
+                    var ref = FirebaseDatabase.getInstance().reference
+                    val childUpdates = HashMap<String, Any>()
+                    var key = getKey(it)
+                    var point = if(it.point == null) 0 else it.point
+                    point += 2
+                    it.point = point
+                    Log.d(TAG, "onRewarded point:$point")
+                    childUpdates["/users/$key"] = it
+                    ref.updateChildren(childUpdates)
+                    updateToolbar()
+                }
+            }
+
+            override fun onRewardedVideoStarted() {
+                Log.d(TAG, "onRewardedVideoStarted")
+            }
+
+            override fun onRewardedVideoAdFailedToLoad(p0: Int) {
+                Log.d(TAG, "onRewardedVideoAdFailedToLoad error:$p0")
+            }
+        }
+        loadRewardedVideoAd()
+    }
+
+    private fun loadRewardedVideoAd(){
+        mRewardedVideoAd.loadAd(
+//             "ca-app-pub-3940256099942544/5224354917",
+            "ca-app-pub-8549606613390169/3243202369",
+//            AdRequest.Builder().addTestDevice("ABEBCC8921F3ABA283C084A2954D0CAE").build())
+                AdRequest.Builder().build())
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -277,8 +356,8 @@ class MainActivity : AppCompatActivity() {
     fun updateViewCounter() {
         selectionList?.apply {
             var counter = size
-            toolbar?.apply {
-                setTitle(counter.toString() + "명을 선택하셨습니다.")
+            toolbar?.run {
+                title = counter.toString() + "명을 선택하셨습니다."
             }
         }
     }
@@ -286,7 +365,7 @@ class MainActivity : AppCompatActivity() {
     private fun getKey(user: User): String {
         var index = 0
         for (u in datas) {
-            if (u.name.equals(user.name)) {
+            if (u.name == user.name) {
                 return dataIndex.get(index)
             }
             index++
@@ -364,9 +443,9 @@ class MainActivity : AppCompatActivity() {
             R.id.item_done -> {
                 Log.d(TAG, "done clicked selectionList:$selectionList")
                 SelectDialog.build(
-                    this@MainActivity, "정말 샀나요?", "", "샀음", DialogInterface.OnClickListener { dialog, inputText ->
-                        var ref = FirebaseDatabase.getInstance().getReference()
-                        var undoRef = FirebaseDatabase.getInstance().getReference().child("history").push()
+                    this@MainActivity, "정말 샀나요?", "", "샀음", { dialog, _ ->
+                        var ref = FirebaseDatabase.getInstance().reference
+                        var undoRef = FirebaseDatabase.getInstance().reference.child("history").push()
                         var undoData = UndoData()
                         undoData.me = me
                         undoData.date = System.currentTimeMillis().toString()
@@ -380,7 +459,7 @@ class MainActivity : AppCompatActivity() {
                             }
                             Log.d(TAG, "key:$key")
                             who.add(user)
-                            childUpdates.put("/users/" + key, user)
+                            childUpdates.put("/users/$key", user)
                         }
                         Log.i(TAG, "done me : $me")
                         me?.let { childUpdates.put("/users/" + getKey(me!!), it) }
@@ -408,7 +487,7 @@ class MainActivity : AppCompatActivity() {
                             setDialogStyle(1)
                             showDialog()
                         }
-                    }, "취소", DialogInterface.OnClickListener { dialog, which ->
+                    }, "취소", { dialog, which ->
                         dialog.dismiss()
                         clearActionMode()
                     }).apply {
@@ -421,7 +500,14 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(this, SecondActivity::class.java))
                 return true
             }
-
+            R.id.action_smile -> {
+                if (mRewardedVideoAd.isLoaded) {
+                    mRewardedVideoAd.show()
+                } else {
+                    Toast.makeText(this, "광고준비가 아직 안되었습니다.", Toast.LENGTH_SHORT)
+                }
+                return true
+            }
 
             else -> return super.onOptionsItemSelected(item)
         }
@@ -448,12 +534,21 @@ class MainActivity : AppCompatActivity() {
 
     fun clearActionMode() {
         isInActionMode = false
-        toolbar?.apply {
-            getMenu().clear()
+        toolbar?.run {
+            menu.clear()
             inflateMenu(R.menu.main)
-            getSupportActionBar()?.setDisplayHomeAsUpEnabled(false)
-            setTitle(R.string.app_name)
+            supportActionBar?.setDisplayHomeAsUpEnabled(false)
+            updateToolbar()
             selectionList.clear()
+        }
+    }
+
+    private fun updateToolbar(){
+        toolbar?.run {
+            var sb = StringBuilder()
+            val point = if(me == null) 0 else if(me!!.point == null) 0 else me!!.point
+            sb.append(resources.getString(R.string.point) + ": " + point)
+            title = sb.toString()
         }
     }
 
@@ -494,20 +589,21 @@ class MainActivity : AppCompatActivity() {
             datas.add(user!!)
             dataIndex.add(key!!)
             Log.d(TAG, "updateUI name:$name, user.name: ${user.name}")
-            if (name.equals(user.fullName)) {
+            if (name == user.fullName) {
                 me = user
                 var editor = pref.edit()
                 editor.putString("key", key)
                 editor.commit()
             }
         }
+        updateToolbar()
         Log.d(TAG, "onDataChange adapter:$myAdapter, datas:$datas, dataIndex:$dataIndex")
         Log.d(TAG, "myAdapter datas:$datas")
         myAdapter?.addAllData(datas)
     }
 
     companion object {
-        private val TAG = "MainActivityMQ!"
+        private val TAG = "MainActivity"
         private val RC_SIGN_IN = 9001
     }
 
