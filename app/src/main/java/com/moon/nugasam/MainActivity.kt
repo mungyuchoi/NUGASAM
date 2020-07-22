@@ -135,7 +135,8 @@ class MainActivity : AppCompatActivity() {
         MobileAds.initialize(this, "ca-app-pub-8549606613390169~4634260996")
 
         mAdView = findViewById(R.id.adView)
-        val adRequest = AdRequest.Builder().addTestDevice("ABEBCC8921F3ABA283C084A2954D0CAE").build()
+//        val adRequest = AdRequest.Builder().addTestDevice("ABEBCC8921F3ABA283C084A2954D0CAE").build()
+        val adRequest = AdRequest.Builder().build()
         mAdView.loadAd(adRequest)
         mAdView.adListener = (object : AdListener() {
 
@@ -221,7 +222,7 @@ class MainActivity : AppCompatActivity() {
     private fun loadRewardedVideoAd(){
         mRewardedVideoAd.loadAd(
 //             "ca-app-pub-3940256099942544/5224354917",
-            "ca-app-pub-8549606613390169/3243202369",
+            "ca-app-pub-8549606613390169/5956997201",
 //            AdRequest.Builder().addTestDevice("ABEBCC8921F3ABA283C084A2954D0CAE").build())
                 AdRequest.Builder().build())
     }
@@ -504,7 +505,7 @@ class MainActivity : AppCompatActivity() {
                 if (mRewardedVideoAd.isLoaded) {
                     mRewardedVideoAd.show()
                 } else {
-                    Toast.makeText(this, "광고준비가 아직 안되었습니다.", Toast.LENGTH_SHORT)
+                    Toast.makeText(this, "광고준비가 아직 안되었습니다.", Toast.LENGTH_SHORT).show()
                 }
                 return true
             }
