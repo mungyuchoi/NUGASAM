@@ -155,14 +155,11 @@ class MainActivity : AppCompatActivity() {
                 Log.d(TAG, "onAdOpened 배너 열림")
                 me?.let{
                     var ref = FirebaseDatabase.getInstance().reference
-                    val childUpdates = HashMap<String, Any>()
                     var key = getKey(it)
                     var point = if(it.point == null) 0 else it.point
                     point += 1
-                    it.point = point
                     Log.d(TAG, "onAdOpened point:$point")
-                    childUpdates["/users/$key"] = it
-                    ref.updateChildren(childUpdates)
+                    ref.child("users").child(key).child("point").setValue(point)
                     updateToolbar()
                 }
             }
@@ -196,14 +193,11 @@ class MainActivity : AppCompatActivity() {
                 Log.d(TAG, "onRewarded item:$p0")
                 me?.let{
                     var ref = FirebaseDatabase.getInstance().reference
-                    val childUpdates = HashMap<String, Any>()
                     var key = getKey(it)
                     var point = if(it.point == null) 0 else it.point
                     point += 2
-                    it.point = point
                     Log.d(TAG, "onRewarded point:$point")
-                    childUpdates["/users/$key"] = it
-                    ref.updateChildren(childUpdates)
+                    ref.child("users").child(key).child("point").setValue(point)
                     updateToolbar()
                 }
             }
@@ -460,12 +454,11 @@ class MainActivity : AppCompatActivity() {
                             }
                             Log.d(TAG, "key:$key")
                             who.add(user)
-                            childUpdates.put("/users/$key", user)
+                            ref.child("users").child(key).child("nuga").setValue(user.nuga)
                         }
-                        Log.i(TAG, "done me : $me")
-                        me?.let { childUpdates.put("/users/" + getKey(me!!), it) }
-                        Log.i(TAG, "done childUpdates: $childUpdates")
-                        ref.updateChildren(childUpdates)
+                        me?.let{
+                            ref.child("users").child(getKey(it)).child("nuga").setValue(it.nuga)
+                        }
 
                         undoData.who = who
                         undoRef.setValue(undoData)
