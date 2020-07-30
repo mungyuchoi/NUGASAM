@@ -10,7 +10,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.moon.nugasam.data.User;
@@ -27,14 +29,18 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
         ImageView mImageView;
         TextView mTitleView;
+        TextView mPointView;
         TextView mNugaView;
+        ImageView mIconView;
         View mView;
 
         ViewHolder(View v) {
             super(v);
             mTitleView = v.findViewById(R.id.title);
             mNugaView = v.findViewById(R.id.nuga);
+            mPointView = v.findViewById(R.id.point);
             mImageView = v.findViewById(R.id.thumbnail);
+            mIconView = v.findViewById(R.id.icon);
             mView = v;
             v.setOnLongClickListener(this);
             v.setOnClickListener(this);
@@ -84,11 +90,33 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        User model = mDataset.get(position);
+    public void onBindViewHolder(final ViewHolder holder, int position) {
+        final User model = mDataset.get(position);
         holder.mView.setBackgroundResource(R.color.white);
         holder.mTitleView.setText(model.name);
         holder.mNugaView.setText(model.nuga.toString());
+        holder.mPointView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (model.point != null){
+                    holder.mPointView.setText(model.point.toString());
+
+                }
+
+            }
+        });
+
+
+        int maxPoint = 0;
+        int index = 0;
+        for (User m : mDataset) {
+            if (m.point != null && m.point > maxPoint) {
+                maxPoint = m.point;
+                index = mDataset.indexOf(m);
+            }
+        }
+        if (index == position)
+            holder.mIconView.setVisibility(View.VISIBLE);
         Glide.with(mActivity).load(model.imageUrl).apply(RequestOptions.circleCropTransform()).into(holder.mImageView);
 
         if (((MainActivity) mActivity).isInActionMode()) {

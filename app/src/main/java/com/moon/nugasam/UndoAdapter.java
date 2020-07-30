@@ -209,6 +209,8 @@ public class UndoAdapter extends RecyclerView.Adapter<UndoAdapter.ViewHolder> {
             ImageView imageView = getImageView(holder, index);
             TextView textView = getTextView(holder, index);
             View item = getItemView(holder, index);
+            if(imageUrl == null || title == null || imageView == null || textView == null || item == null)
+                return;
             item.setVisibility(View.VISIBLE);
             Glide.with(mActivity).load(imageUrl).apply(RequestOptions.circleCropTransform()).into(imageView);
             textView.setText(title);

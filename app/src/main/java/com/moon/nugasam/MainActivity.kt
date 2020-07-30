@@ -80,12 +80,12 @@ class MainActivity : AppCompatActivity() {
         // recyclerview
         recyclerView = findViewById<RecyclerView>(R.id.recyclerView)?.apply {
             setHasFixedSize(true)
-            setLayoutManager(LinearLayoutManager(this@MainActivity))
+            layoutManager = LinearLayoutManager(this@MainActivity)
 
             Log.d(TAG, "onCreate datas$datas")
 
             myAdapter = MyAdapter(this@MainActivity, datas.clone() as ArrayList<User>?)
-            setAdapter(myAdapter)
+            adapter = myAdapter
             Log.d(TAG, "onCreate adapter:$adapter")
             loadFirebaseData()
         }
@@ -135,8 +135,8 @@ class MainActivity : AppCompatActivity() {
         MobileAds.initialize(this, "ca-app-pub-8549606613390169~4634260996")
 
         mAdView = findViewById(R.id.adView)
-//        val adRequest = AdRequest.Builder().addTestDevice("ABEBCC8921F3ABA283C084A2954D0CAE").build()
-        val adRequest = AdRequest.Builder().build()
+        val adRequest = AdRequest.Builder().addTestDevice("ABEBCC8921F3ABA283C084A2954D0CAE").build()
+//        val adRequest = AdRequest.Builder().build()
         mAdView.loadAd(adRequest)
         mAdView.adListener = (object : AdListener() {
 
@@ -150,9 +150,9 @@ class MainActivity : AppCompatActivity() {
                 Log.d(TAG, "onAdFailedToLoad 배너 errorCode:$errorCode")
             }
 
-            override fun onAdOpened() {
-                super.onAdOpened()
-                Log.d(TAG, "onAdOpened 배너 열림")
+            override fun onAdClosed() {
+                super.onAdClosed()
+                Log.d(TAG, "onAdOpened 배너 닫힘 ")
                 me?.let{
                     var ref = FirebaseDatabase.getInstance().reference
                     var key = getKey(it)
@@ -195,7 +195,7 @@ class MainActivity : AppCompatActivity() {
                     var ref = FirebaseDatabase.getInstance().reference
                     var key = getKey(it)
                     var point = if(it.point == null) 0 else it.point
-                    point += 2
+                    point += 10
                     Log.d(TAG, "onRewarded point:$point")
                     ref.child("users").child(key).child("point").setValue(point)
                     updateToolbar()
@@ -320,7 +320,7 @@ class MainActivity : AppCompatActivity() {
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
         Log.d(TAG, "onPrepareOptionsMenu me: ${me?.permission}")
         if (me?.permission == 1) {
-            menu?.getItem(6)?.setVisible(true)
+            menu?.findItem(R.id.action_manager)?.isVisible = true
         }
         return super.onPrepareOptionsMenu(menu)
     }
@@ -331,7 +331,7 @@ class MainActivity : AppCompatActivity() {
         toolbar?.inflateMenu(R.menu.main_action_mode)
         isInActionMode = true
         myAdapter?.notifyDataSetChanged()
-        getSupportActionBar()?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         prepareSelection(position)
     }
 
