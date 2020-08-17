@@ -135,8 +135,8 @@ class MainActivity : AppCompatActivity() {
         MobileAds.initialize(this, "ca-app-pub-8549606613390169~4634260996")
 
         mAdView = findViewById(R.id.adView)
-        val adRequest = AdRequest.Builder().addTestDevice("ABEBCC8921F3ABA283C084A2954D0CAE").build()
-//        val adRequest = AdRequest.Builder().build()
+//        val adRequest = AdRequest.Builder().addTestDevice("ABEBCC8921F3ABA283C084A2954D0CAE").build()
+        val adRequest = AdRequest.Builder().build()
         mAdView.loadAd(adRequest)
         mAdView.adListener = (object : AdListener() {
 
@@ -152,16 +152,16 @@ class MainActivity : AppCompatActivity() {
 
             override fun onAdClosed() {
                 super.onAdClosed()
-                Log.d(TAG, "onAdOpened 배너 닫힘 ")
-                me?.let{
-                    var ref = FirebaseDatabase.getInstance().reference
-                    var key = getKey(it)
-                    var point = if(it.point == null) 0 else it.point
-                    point += 1
-                    Log.d(TAG, "onAdOpened point:$point")
-                    ref.child("users").child(key).child("point").setValue(point)
-                    updateToolbar()
-                }
+                Log.d(TAG, "onAdClosed 배너 닫힘 ")
+//                me?.let{
+//                    var ref = FirebaseDatabase.getInstance().reference
+//                    var key = getKey(it)
+//                    var point = if(it.point == null) 0 else it.point
+//                    point += 1
+//                    Log.d(TAG, "onAdOpened point:$point")
+//                    ref.child("users").child(key).child("point").setValue(point)
+//                    updateToolbar()
+//                }
             }
         })
 
@@ -538,9 +538,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateToolbar(){
+        Log.i("MQ!", "updateToolbar me:${me?.point}")
         toolbar?.run {
             var sb = StringBuilder()
             val point = if(me == null) 0 else if(me!!.point == null) 0 else me!!.point
+            Log.i("MQ!", "point:$point me:${me?.point}")
             sb.append(resources.getString(R.string.point) + ": " + point)
             title = sb.toString()
         }
@@ -582,14 +584,16 @@ class MainActivity : AppCompatActivity() {
             val user = postSnapshot.getValue(User::class.java)
             datas.add(user!!)
             dataIndex.add(key!!)
-            Log.d(TAG, "updateUI name:$name, user.name: ${user.name}")
-            if (name == user.fullName) {
+            Log.d(TAG, "updateUI name:$name, user.name: ${user.name} , user.fullname:${user.fullName}")
+            if (name == user.name) {
                 me = user
+                Log.d("MQ!", "point:${me?.point}")
                 var editor = pref.edit()
                 editor.putString("key", key)
                 editor.commit()
             }
         }
+        Log.i("MQ!", "updateUI last!! me:${me?.point}")
         updateToolbar()
         Log.d(TAG, "onDataChange adapter:$myAdapter, datas:$datas, dataIndex:$dataIndex")
         Log.d(TAG, "myAdapter datas:$datas")

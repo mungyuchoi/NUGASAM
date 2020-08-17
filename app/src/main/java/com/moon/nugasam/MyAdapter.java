@@ -92,6 +92,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         final User model = mDataset.get(position);
+        holder.setIsRecyclable(false);
         holder.mView.setBackgroundResource(R.color.white);
         holder.mTitleView.setText(model.name);
         holder.mNugaView.setText(model.nuga.toString());
