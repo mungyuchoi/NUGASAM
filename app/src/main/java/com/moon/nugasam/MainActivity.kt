@@ -216,7 +216,7 @@ class MainActivity : AppCompatActivity() {
     private fun loadRewardedVideoAd(){
         mRewardedVideoAd.loadAd(
 //             "ca-app-pub-3940256099942544/5224354917",
-            "ca-app-pub-8549606613390169/5956997201",
+            "ca-app-pub-8549606613390169/8372384890",
 //            AdRequest.Builder().addTestDevice("ABEBCC8921F3ABA283C084A2954D0CAE").build())
                 AdRequest.Builder().build())
     }
@@ -436,7 +436,7 @@ class MainActivity : AppCompatActivity() {
                 return true
             }
             R.id.item_done -> {
-                Log.d(TAG, "done clicked selectionList:$selectionList")
+                Log.d(TAG, "done clicked selectionList:$selectionList me:$me")
                 SelectDialog.build(
                     this@MainActivity, "정말 샀나요?", "", "샀음", { dialog, _ ->
                         var ref = FirebaseDatabase.getInstance().reference
@@ -585,7 +585,7 @@ class MainActivity : AppCompatActivity() {
             datas.add(user!!)
             dataIndex.add(key!!)
             Log.d(TAG, "updateUI name:$name, user.name: ${user.name} , user.fullname:${user.fullName}")
-            if (name == user.name) {
+            if (name == user.name || name == user.fullName) {
                 me = user
                 Log.d("MQ!", "point:${me?.point}")
                 var editor = pref.edit()
