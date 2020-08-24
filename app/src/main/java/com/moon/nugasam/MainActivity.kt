@@ -88,6 +88,7 @@ class MainActivity : AppCompatActivity() {
             adapter = myAdapter
             Log.d(TAG, "onCreate adapter:$adapter")
             loadFirebaseData()
+            setRecycledViewPool(RecyclerView.RecycledViewPool())
         }
         progress = findViewById(R.id.refresh)
 
@@ -157,7 +158,7 @@ class MainActivity : AppCompatActivity() {
 //                    var ref = FirebaseDatabase.getInstance().reference
 //                    var key = getKey(it)
 //                    var point = if(it.point == null) 0 else it.point
-//                    point += 1
+//                    point -= 1
 //                    Log.d(TAG, "onAdOpened point:$point")
 //                    ref.child("users").child(key).child("point").setValue(point)
 //                    updateToolbar()
