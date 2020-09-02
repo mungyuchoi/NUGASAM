@@ -5,7 +5,7 @@
     <string name="nav_header_title">Android Studio</string>
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_settings">설정</string>
     <string name="action_profile">프로필</string>
     <string name="action_cat">야옹</string>
     <string name="action_deer">깨애엨</string>
@@ -108,4 +108,8 @@
     <string name="admob_app_id">ca-app-pub-8549606613390169~4634260996</string>
     <string name="default_notification_channel_id" translatable="false">fcm_default_channel</string>
     <string name="default_notification_channel_name" translatable="true">Weather</string>
+
+    <string name="pref_key_profile" translatable="false">pref_key_profile</string>
+    <string name="pref_key_qna" translatable="false">pref_key_qna</string>
+    <string name="pref_key_version" translatable="false">pref_key_version</string>
 </resources>

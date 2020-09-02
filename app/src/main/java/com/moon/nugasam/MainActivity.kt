@@ -374,15 +374,6 @@ class MainActivity : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         when (item.itemId) {
-            R.id.action_profile -> {
-                var intent = Intent(
-                    this@MainActivity,
-                    GoogleSignInActivity::class.java
-                )
-                intent.putExtra("name", me?.name)
-                startActivity(intent)
-                return true
-            }
             R.id.action_reorder -> {
                 if (reorder.equals("name")) {
                     reorder = "nuga"
@@ -394,12 +385,6 @@ class MainActivity : AppCompatActivity() {
                 editor.putString("reorder", reorder)
                 editor.commit()
                 loadFirebaseData()
-                return true
-            }
-            R.id.action_qna -> {
-                val intent = Intent(Intent.ACTION_VIEW)
-                intent.data = Uri.parse("https://moonque.tistory.com/105")
-                startActivity(intent)
                 return true
             }
             R.id.action_refresh -> {
@@ -493,6 +478,10 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.action_manager -> {
                 startActivity(Intent(this, SecondActivity::class.java))
+                return true
+            }
+            R.id.action_setting -> {
+                startActivity(Intent(this, SettingsActivity::class.java))
                 return true
             }
             R.id.action_smile -> {

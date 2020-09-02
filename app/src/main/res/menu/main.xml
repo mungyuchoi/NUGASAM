@@ -12,10 +12,6 @@
           android:icon="@drawable/ic_refresh"
           app:showAsAction="always"/>
 
-    <item android:id="@+id/action_profile"
-          android:title="@string/action_profile"
-          app:showAsAction="never"/>
-
     <item android:id="@+id/action_reorder"
           android:title="@string/action_reorder"
           app:showAsAction="never"/>
@@ -28,25 +24,12 @@
         android:title="@string/action_undo"
         app:showAsAction="never"/>
 
-    <item android:id="@+id/action_qna"
-          android:title="@string/action_qna"
+    <item android:id="@+id/action_setting"
+          android:title="@string/action_settings"
           app:showAsAction="never"/>
 
     <item android:id="@+id/action_manager"
-          android:title="@string/action_manager"
-          app:showAsAction="never"
-          android:visible="false"/>
-
-    <!--<item android:id="@+id/action_cat"-->
-        <!--android:title="@string/action_cat"-->
-        <!--app:showAsAction="never"/>-->
-
-    <!--<item android:id="@+id/action_deer"-->
-        <!--android:title="@string/action_deer"-->
-        <!--app:showAsAction="never"/>-->
-
-    <!--<item android:id="@+id/action_db"-->
-          <!--android:title="db_test"-->
-          <!--android:orderInCategory="100"-->
-          <!--app:showAsAction="never"/>-->
+            android:title="@string/action_manager"
+            app:showAsAction="never"
+            android:visible="false"/>
 </menu>

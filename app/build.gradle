@@ -20,6 +20,7 @@ android {
 
         renderscriptTargetApi 19
         renderscriptSupportModeEnabled true
+        vectorDrawables.useSupportLibrary = true
     }
     buildTypes {
         release {
@@ -61,4 +62,7 @@ dependencies {
     implementation 'com.facebook.stetho:stetho:1.5.0'
     implementation 'com.facebook.stetho:stetho-okhttp3:1.5.0'
     implementation 'com.facebook.stetho:stetho-js-rhino:1.5.0'
+
+    implementation "androidx.preference:preference:1.1.1"
+    implementation "androidx.preference:preference-ktx:1.1.1"
 }
