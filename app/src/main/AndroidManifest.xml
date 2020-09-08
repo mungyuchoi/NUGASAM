@@ -61,6 +61,7 @@
                 android:name=".GoogleSignInActivity"
                 android:label="@string/label_google_sign_in" />
         <activity android:name=".UndoActivity" />
+        <activity android:name=".ProfileActivity" />
 
         <activity
                 android:name=".SettingsActivity"

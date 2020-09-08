@@ -32,6 +32,10 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceChan
 
     override fun onPreferenceTreeClick(preference: Preference?): Boolean {
         return when (preference?.key) {
+            getString(R.string.pref_key_profile) -> {
+                startActivity(Intent(context, ProfileActivity::class.java))
+                true
+            }
             getString(R.string.pref_key_qna) -> {
                 true
             }
