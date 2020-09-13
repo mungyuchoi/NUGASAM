@@ -13,12 +13,14 @@
                 android:layout_height="350dp"
                 android:orientation="vertical">
             <ImageView
+                    android:id="@+id/thumbnail"
                     android:layout_marginTop="45dp"
                     android:layout_gravity="center_horizontal"
                     android:layout_width="150dp"
                     android:layout_height="150dp"
                     android:src="@drawable/ic_launcher"/>
             <TextView
+                    android:id="@+id/name"
                     android:layout_marginTop="10dp"
                     android:layout_gravity="center_horizontal"
                     android:layout_width="wrap_content"
@@ -37,7 +39,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="horizontal"
-                    android:weightSum="3">
+                    android:weightSum="2">
                 <LinearLayout
                         android:gravity="center"
                         android:orientation="vertical"
@@ -47,10 +49,11 @@
                     <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Photos"
+                            android:text="밀웜 수"
                             android:textSize="20sp"
                             />
                     <TextView
+                            android:id="@+id/mealworm_point"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="125"
@@ -68,34 +71,14 @@
                     <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Followers"
+                            android:text="하트 수"
                             android:textSize="20sp"
                             />
                     <TextView
+                            android:id="@+id/heart_point"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="1205"
-                            android:textStyle="bold"
-                            android:textSize="20sp"
-                            android:paddingTop="10dp"
-                            android:textColor="@color/colorPrimary"/>
-                </LinearLayout>
-                <LinearLayout
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="match_parent">
-                    <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Following"
-                            android:textSize="20sp"
-                            />
-                    <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="360"
                             android:textStyle="bold"
                             android:textSize="20sp"
                             android:paddingTop="10dp"
@@ -118,76 +101,14 @@
             <ImageView
                     android:layout_width="36dp"
                     android:layout_height="36dp"
-                    android:src="@drawable/ic_baseline_email_24"/>
+                    android:src="@drawable/ic_person_white"/>
             <TextView
                     android:textStyle="bold"
                     android:layout_gravity="center_vertical"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingLeft="20dp"
-                    android:text="Wiliam@gmail.com"/>
-        </LinearLayout>
-        <LinearLayout
-                android:layout_marginTop="25dp"
-                android:orientation="horizontal"
-                android:paddingLeft="25dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-            <ImageView
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:src="@drawable/ic_menu_send"/>
-            <TextView
-                    android:textStyle="bold"
-                    android:layout_gravity="center_vertical"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingLeft="20dp"
-                    android:text="+266 225 225"/>
-        </LinearLayout>
-        <LinearLayout
-                android:layout_marginTop="25dp"
-                android:orientation="horizontal"
-                android:paddingLeft="25dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-            <ImageView
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:src="@drawable/ic_done"/>
-            <TextView
-                    android:textStyle="bold"
-                    android:layout_gravity="center_vertical"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingLeft="20dp"
-                    android:text="Add to group"/>
-        </LinearLayout>
-        <LinearLayout
-                android:layout_marginTop="25dp"
-                android:orientation="horizontal"
-                android:paddingLeft="25dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-            <ImageView
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:src="@drawable/ic_done"/>
-            <TextView
-                    android:textStyle="bold"
-                    android:layout_gravity="center_vertical"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingLeft="20dp"
-                    android:text="Show all comments"/>
+                    android:text="밥방 멤버(방 기능 개발중..)"/>
         </LinearLayout>
     </LinearLayout>
-    <Button
-            android:textColor="#fff"
-            android:background="@drawable/buttonstyle"
-            android:layout_marginTop="35dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Follow Me"/>
 </LinearLayout>

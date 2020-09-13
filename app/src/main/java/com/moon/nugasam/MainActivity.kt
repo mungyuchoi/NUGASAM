@@ -57,6 +57,8 @@ class MainActivity : AppCompatActivity() {
     // ads
     private lateinit var mAdView: AdView
     private lateinit var mRewardedVideoAd: RewardedVideoAd
+    private lateinit var mShareAdView: InterstitialAd
+
 
     // auth
     private lateinit var mAuth: FirebaseAuth
@@ -84,7 +86,7 @@ class MainActivity : AppCompatActivity() {
 
             Log.d(TAG, "onCreate datas$datas")
 
-            myAdapter = MyAdapter(this@MainActivity, datas.clone() as ArrayList<User>?)
+            myAdapter = MyAdapter(this@MainActivity, datas.clone() as ArrayList<User>)
             adapter = myAdapter
             Log.d(TAG, "onCreate adapter:$adapter")
             loadFirebaseData()
@@ -212,6 +214,17 @@ class MainActivity : AppCompatActivity() {
             }
         }
         loadRewardedVideoAd()
+
+        mShareAdView = InterstitialAd(this).apply{
+            adUnitId = "ca-app-pub-8549606613390169/5837153647"
+            loadAd(AdRequest.Builder().build())
+            adListener = object : AdListener() {
+                override fun onAdClosed() {
+                    super.onAdClosed()
+                    shareDialog()
+                }
+            }
+        }
     }
 
     private fun loadRewardedVideoAd(){
@@ -431,7 +444,6 @@ class MainActivity : AppCompatActivity() {
                         undoData.me = me
                         undoData.date = System.currentTimeMillis().toString()
                         var who = ArrayList<User>()
-                        val childUpdates = HashMap<String, Any>()
                         for (user in selectionList) {
                             var key = getKey(user)
                             user.nuga += -1
@@ -442,9 +454,6 @@ class MainActivity : AppCompatActivity() {
                             who.add(user)
                             ref.child("users").child(key).child("nuga").setValue(user.nuga)
                         }
-                        me?.let{
-                            ref.child("users").child(getKey(it)).child("nuga").setValue(it.nuga)
-                        }
 
                         undoData.who = who
                         undoRef.setValue(undoData)
@@ -453,21 +462,24 @@ class MainActivity : AppCompatActivity() {
                         myAdapter?.notifyDataSetChanged()
                         dialog.dismiss()
 
-                        SelectDialog.build(
-                            this@MainActivity,
-                            "공유하시겠습니까?",
-                            "",
-                            "공유",
-                            DialogInterface.OnClickListener { dialog, inputText ->
-                                dialog.dismiss()
-                                share()
-                            },
-                            "취소",
-                            DialogInterface.OnClickListener { dialog, which -> dialog.dismiss() }).apply {
-                            setDialogStyle(1)
-                            showDialog()
+                        me?.let{
+                            ref.child("users").child(getKey(it)).child("nuga").setValue(it.nuga)
+                            if (who.size < it.point) {
+                                var point = if (it.point == null) 0 else it.point
+                                it.point -= who.size
+                                ref.child("users").child(getKey(it)).child("point").setValue(it.point)
+                                updateToolbar()
+                                shareDialog()
+                            } else {
+                                if (mShareAdView.isLoaded) {
+                                    mShareAdView.show()
+                                } else {
+                                    shareDialog()
+                                }
+                            }
                         }
-                    }, "취소", { dialog, which ->
+
+                    }, "취소", { dialog, _ ->
                         dialog.dismiss()
                         clearActionMode()
                     }).apply {
@@ -494,6 +506,23 @@ class MainActivity : AppCompatActivity() {
             }
 
             else -> return super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun shareDialog() {
+        SelectDialog.build(
+            this@MainActivity,
+            "공유하시겠습니까?",
+            "",
+            "공유",
+            DialogInterface.OnClickListener { dialog, inputText ->
+                dialog.dismiss()
+                share()
+            },
+            "취소",
+            DialogInterface.OnClickListener { dialog, which -> dialog.dismiss() }).apply {
+            setDialogStyle(1)
+            showDialog()
         }
     }
 
@@ -528,11 +557,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateToolbar(){
-        Log.i("MQ!", "updateToolbar me:${me?.point}")
         toolbar?.run {
             var sb = StringBuilder()
             val point = if(me == null) 0 else if(me!!.point == null) 0 else me!!.point
-            Log.i("MQ!", "point:$point me:${me?.point}")
             sb.append(resources.getString(R.string.point) + ": " + point)
             title = sb.toString()
         }
@@ -577,13 +604,11 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "updateUI name:$name, user.name: ${user.name} , user.fullname:${user.fullName}")
             if (name == user.name || name == user.fullName) {
                 me = user
-                Log.d("MQ!", "point:${me?.point}")
                 var editor = pref.edit()
                 editor.putString("key", key)
                 editor.commit()
             }
         }
-        Log.i("MQ!", "updateUI last!! me:${me?.point}")
         updateToolbar()
         Log.d(TAG, "onDataChange adapter:$myAdapter, datas:$datas, dataIndex:$dataIndex")
         Log.d(TAG, "myAdapter datas:$datas")
