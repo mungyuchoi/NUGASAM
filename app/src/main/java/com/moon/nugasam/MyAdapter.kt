@@ -89,6 +89,7 @@ class MyAdapter internal constructor(private val mActivity: Activity, myDataset:
         holder.mNugaView.text = model.nuga.toString()
         holder.mPointView.setOnClickListener(View.OnClickListener {
             if (model.point != null) {
+                holder.mPointView.background = null
                 holder.mPointView.text = model.point.toString()
             }
         })

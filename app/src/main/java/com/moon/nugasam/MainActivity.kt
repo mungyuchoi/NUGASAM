@@ -496,7 +496,7 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(this, SettingsActivity::class.java))
                 return true
             }
-            R.id.action_smile -> {
+            R.id.action_meerkat -> {
                 if (mRewardedVideoAd.isLoaded) {
                     mRewardedVideoAd.show()
                 } else {

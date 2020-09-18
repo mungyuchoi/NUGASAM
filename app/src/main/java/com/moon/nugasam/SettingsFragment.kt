@@ -1,13 +1,16 @@
 package com.moon.nugasam
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.browser.customtabs.CustomTabsClient.getPackageName
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 
@@ -40,6 +43,23 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceChan
                 true
             }
             getString(R.string.pref_key_version) -> {
+                val appPackageName: String= requireContext().packageName
+
+                try {
+                    startActivity(
+                        Intent(
+                            Intent.ACTION_VIEW,
+                            Uri.parse("market://details?id=$appPackageName")
+                        )
+                    )
+                } catch (anfe: ActivityNotFoundException) {
+                    startActivity(
+                        Intent(
+                            Intent.ACTION_VIEW,
+                            Uri.parse("https://play.google.com/store/apps/details?id=$appPackageName")
+                        )
+                    )
+                }
                 true
             }
             else -> {

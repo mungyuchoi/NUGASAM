@@ -2,9 +2,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/action_smile"
+    <item android:id="@+id/action_meerkat"
             android:title="@string/action_smile"
-            android:icon="@drawable/ic_menu_smile"
+            android:icon="@drawable/ic_meercat"
             app:showAsAction="always"/>
 
     <item android:id="@+id/action_refresh"
