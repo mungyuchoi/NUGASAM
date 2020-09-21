@@ -20,8 +20,6 @@ class MyAdapter internal constructor(private val mActivity: Activity, myDataset:
     RecyclerView.Adapter<MyAdapter.ViewHolder>() {
     private val myName: String
 
-    lateinit var doOnItemClick: (User) -> Unit
-
     inner class ViewHolder(v: View) : RecyclerView.ViewHolder(v), View.OnClickListener,
         OnLongClickListener {
         var mImageView: ImageView
@@ -91,6 +89,7 @@ class MyAdapter internal constructor(private val mActivity: Activity, myDataset:
             if (model.point != null) {
                 holder.mPointView.background = null
                 holder.mPointView.text = model.point.toString()
+                holder.setIsRecyclable(false)
             }
         })
         var maxPoint = 0
@@ -101,7 +100,11 @@ class MyAdapter internal constructor(private val mActivity: Activity, myDataset:
                 index = mDataset.indexOf(m)
             }
         }
-        if (index == position) holder.mIconView.visibility = View.VISIBLE
+        if (index == position) {
+            holder.mIconView.visibility = View.VISIBLE
+        } else {
+            holder.mIconView.visibility = View.GONE
+        }
         Glide.with(mActivity).load(model.imageUrl).apply(RequestOptions.circleCropTransform())
             .into(holder.mImageView)
         if ((mActivity as MainActivity).isInActionMode) {

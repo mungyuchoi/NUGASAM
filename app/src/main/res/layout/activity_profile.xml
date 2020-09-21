@@ -39,7 +39,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="horizontal"
-                    android:weightSum="2">
+                    android:weightSum="1">
                 <LinearLayout
                         android:gravity="center"
                         android:orientation="vertical"
@@ -49,7 +49,7 @@
                     <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="밀웜 수"
+                            android:text="미어캣"
                             android:textSize="20sp"
                             />
                     <TextView
@@ -57,28 +57,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="125"
-                            android:textStyle="bold"
-                            android:textSize="20sp"
-                            android:paddingTop="10dp"
-                            android:textColor="@color/colorPrimary"/>
-                </LinearLayout>
-                <LinearLayout
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="match_parent">
-                    <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="하트 수"
-                            android:textSize="20sp"
-                            />
-                    <TextView
-                            android:id="@+id/heart_point"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="1205"
                             android:textStyle="bold"
                             android:textSize="20sp"
                             android:paddingTop="10dp"

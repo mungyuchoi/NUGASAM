@@ -27,7 +27,6 @@ class ProfileActivity : AppCompatActivity() {
     private var thumbnail: ImageView? = null
     private var title: TextView? = null
     private var mealwormPoint: TextView? = null
-    private var heartPoint: TextView? = null
 
     private var me: User? = null
 
@@ -67,7 +66,6 @@ class ProfileActivity : AppCompatActivity() {
             }
         }
         mealwormPoint = findViewById(R.id.mealworm_point)
-        heartPoint = findViewById(R.id.heart_point)
 
         val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
         reorder = pref.getString("reorder", "name")
@@ -168,7 +166,6 @@ class ProfileActivity : AppCompatActivity() {
             Log.i("MQ!", "name:$name, title:$title")
             title?.text = name
             mealwormPoint?.text = this?.point!!.toString()
-            heartPoint?.text = this?.nuga!!.toString()
         }
     }
 
