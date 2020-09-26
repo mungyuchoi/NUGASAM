@@ -26,6 +26,7 @@ import com.moon.nugasam.data.User;
 import org.jetbrains.annotations.NotNull;
 
 public class UndoAdapter extends RecyclerView.Adapter<UndoAdapter.ViewHolder> {
+    private static final String TAG = "UndoAdapter";
 
     private Activity mActivity;
     private static ArrayList<UndoData> mDataset;
@@ -123,7 +124,7 @@ public class UndoAdapter extends RecyclerView.Adapter<UndoAdapter.ViewHolder> {
 
         @Override
         public boolean onLongClick(View view) {
-            Log.d("MQ!", "onLongClick position: " + getAdapterPosition());
+            Log.d(TAG, "onLongClick position: " + getAdapterPosition());
             SelectDialog dialog = SelectDialog.build(mActivity, "정말 취소하나요?", "", "네", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -141,12 +142,12 @@ public class UndoAdapter extends RecyclerView.Adapter<UndoAdapter.ViewHolder> {
                             Map childUpdates = new HashMap<String, Object>();
                             User me = ((UndoActivity) mActivity).getUser(undoData.me.fullName);
                             me.nuga -= whosCount;
-                            Log.d("MQ!", "me : " + undoData.me.fullName + ", whoCount: " + whosCount + ", me key: " + ((UndoActivity) mActivity).getKey(undoData.me));
+                            Log.d(TAG, "me : " + undoData.me.fullName + ", whoCount: " + whosCount + ", me key: " + ((UndoActivity) mActivity).getKey(undoData.me));
                             childUpdates.put("/users/" + ((UndoActivity) mActivity).getKey(undoData.me), me);
                             for (int i = 0; i < whosCount; i++) {
                                 User user = ((UndoActivity) mActivity).getUser(undoData.who.get(i).fullName);
                                 user.nuga += 1;
-                                Log.d("MQ!", "who: " + user.fullName + ", key : " + ((UndoActivity) mActivity).getKey(user));
+                                Log.d(TAG, "who: " + user.fullName + ", key : " + ((UndoActivity) mActivity).getKey(user));
                                 childUpdates.put("/users/" + ((UndoActivity) mActivity).getKey(user), user);
                             }
                             ref.updateChildren(childUpdates);

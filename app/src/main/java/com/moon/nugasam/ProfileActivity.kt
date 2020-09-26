@@ -11,8 +11,6 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import com.google.android.gms.tasks.OnSuccessListener
-import com.google.android.gms.tasks.Task
 import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
@@ -94,11 +92,11 @@ class ProfileActivity : AppCompatActivity() {
     private fun uploadFile() {
         val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
         var key = pref.getString("key", "")
-        Log.i("MQ!", "uploadFile key:$key")
+        Log.i(TAG, "uploadFile key:$key")
         val ref = storageRef.child(key +","+getExtension(uri))
         var uploadTask = ref.putFile(uri)
         ref.putFile(uri).addOnSuccessListener {
-            Log.i("MQ!", "addOnSuccessListener")
+            Log.i(TAG, "addOnSuccessListener")
             uploadTask.continueWithTask{
                 task ->
                 if(!task.isSuccessful){
@@ -111,7 +109,7 @@ class ProfileActivity : AppCompatActivity() {
                 task->
                 if(task.isSuccessful){
                     val downloadUri = task.result
-                    Log.i("MQ!", "downloadUri:$downloadUri, key:$key")
+                    Log.i(TAG, "downloadUri:$downloadUri, key:$key")
                     // me의 url에 업데이트 하기
                     FirebaseDatabase.getInstance().reference.child("users")
                         .child(key).child("imageUrl").setValue(downloadUri.toString())
@@ -120,7 +118,7 @@ class ProfileActivity : AppCompatActivity() {
                 }
             }
         }.addOnFailureListener {
-            Log.i("MQ!", "addOnFailureListener")
+            Log.i(TAG, "addOnFailureListener")
         }
 
     }
@@ -163,7 +161,7 @@ class ProfileActivity : AppCompatActivity() {
             Glide.with(this@ProfileActivity).load(me!!.imageUrl)
                 .apply(RequestOptions.circleCropTransform())
                 .into(thumbnail!!)
-            Log.i("MQ!", "name:$name, title:$title")
+            Log.i(TAG, "name:$name, title:$title")
             title?.text = name
             mealwormPoint?.text = this?.point!!.toString()
         }
@@ -177,4 +175,9 @@ class ProfileActivity : AppCompatActivity() {
         override fun onCancelled(p0: DatabaseError) {
         }
     }
+
+    companion object {
+        const val TAG = "ProfileActivity"
+    }
+
 }

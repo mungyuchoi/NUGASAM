@@ -9,16 +9,23 @@ import android.view.MenuItem
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import android.view.Gravity
 import android.view.View
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.*
 import java.util.ArrayList
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.GravityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieAnimationView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.google.android.gms.ads.*
 import com.google.android.gms.ads.reward.RewardItem
 import com.google.android.gms.ads.reward.RewardedVideoAd
@@ -28,11 +35,13 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.ValueEventListener
+import com.infideap.drawerbehavior.AdvanceDrawerLayout
 import com.kongzue.dialog.listener.InputDialogOkButtonClickListener
 import com.kongzue.dialog.v2.InputDialog
 import com.kongzue.dialog.v2.SelectDialog
@@ -40,9 +49,8 @@ import com.moon.nugasam.data.UndoData
 import com.moon.nugasam.data.User
 import com.moon.nugasam.update.ForceUpdateChecker
 import kotlinx.android.synthetic.main.activity_google.*
-import java.util.HashMap
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private var toolbar: Toolbar? = null
     private var recyclerView: RecyclerView? = null
@@ -53,6 +61,11 @@ class MainActivity : AppCompatActivity() {
     private var progress: LottieAnimationView? = null
     private var reorder: String? = null
     private var query: Query? = null
+    private lateinit var drawer: AdvanceDrawerLayout
+    private lateinit var navigationView: NavigationView
+    private var navigationThumbnail: ImageView? = null
+    private var navigationMeerKat: TextView? = null
+    private var navigationPoint: TextView? = null
 
     // ads
     private lateinit var mAdView: AdView
@@ -71,7 +84,14 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        FirebaseApp.initializeApp(this)
+        initView()
+        initNavigation()
+        initFirebaseAuth()
+        initAds()
+        initForceUpdateCheck()
+    }
+
+    private fun initView() {
         toolbar = findViewById<Toolbar>(R.id.toolbar)?.apply {
             updateToolbar()
         }
@@ -93,24 +113,76 @@ class MainActivity : AppCompatActivity() {
             setRecycledViewPool(RecyclerView.RecycledViewPool())
         }
         progress = findViewById(R.id.refresh)
-
-
-        checkFirebaseAuth()
-        initAds()
-        ForceUpdateChecker.with(this).onUpdateNeeded(ForceUpdateChecker.OnUpdateNeededListener {
-            Log.d(TAG, "updateNeedListener $this")
-            val dialog = AlertDialog.Builder(this)
-                .setTitle("강제 업데이트")
-                .setMessage("업데이트는 필수입니다.")
-                .setPositiveButton(
-                    "Update"
-                ) { _, _ -> redirectStore(it) }
-            dialog.setCancelable(false)
-            dialog.show()
-        }).check()
     }
 
-    private fun checkFirebaseAuth() {
+    private fun initNavigation() {
+        drawer = (findViewById<View>(R.id.drawer_layout) as AdvanceDrawerLayout).apply {
+            ActionBarDrawerToggle(
+                this@MainActivity, this, toolbar,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close
+            ).run {
+                addDrawerListener(this)
+                syncState()
+            }
+            setViewScale(Gravity.START, 0.9f)
+            setRadius(Gravity.START, 35f)
+            setViewElevation(Gravity.START, 20f)
+        }
+        navigationView = (findViewById<View>(R.id.nav_view) as NavigationView).apply {
+            menu.addSubMenu("Top Ranking").run {
+                add(0, R.integer.nav_tbd, 0, "TBD...").apply {
+                    icon = getDrawable(R.drawable.icon_meerkat)
+                }
+            }
+            setNavigationItemSelectedListener(this@MainActivity)
+            getHeaderView(0).run {
+                navigationThumbnail = findViewById(R.id.thumbnail)
+                navigationMeerKat = findViewById(R.id.title)
+                navigationPoint = findViewById(R.id.point)
+                findViewById<TextView>(R.id.show_profile).run {
+                    setOnClickListener {
+                        startActivity(Intent(context, ProfileActivity::class.java))
+                    }
+                }
+            }
+
+        }
+
+
+    }
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        Log.i("MQ!", "onNavigationItemSelected item:$item, ${item.itemId}")
+        when(item.itemId){
+            R.id.nav_share -> {
+                share()
+                drawer!!.closeDrawer(GravityCompat.START)
+                return true
+            }
+            R.id.nav_reorder -> {
+                if (reorder.equals("name")) {
+                    reorder = "nuga"
+                } else {
+                    reorder = "name"
+                }
+                val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+                var editor = pref.edit()
+                editor.putString("reorder", reorder)
+                editor.commit()
+                loadFirebaseData()
+                drawer!!.closeDrawer(GravityCompat.START)
+                return true
+            }
+            R.integer.nav_tbd -> {
+                Toast.makeText(applicationContext, "업데이트 예정입니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+        return true
+    }
+
+    private fun initFirebaseAuth() {
+        FirebaseApp.initializeApp(this)
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
@@ -119,7 +191,10 @@ class MainActivity : AppCompatActivity() {
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
         mAuth = FirebaseAuth.getInstance()
         val currentUser = mAuth.currentUser
-        Log.d(TAG, "currentUser: $currentUser, image: ${currentUser?.photoUrl}, name: ${currentUser?.displayName} ")
+        Log.d(
+            TAG,
+            "currentUser: $currentUser, image: ${currentUser?.photoUrl}, name: ${currentUser?.displayName} "
+        )
         if (currentUser == null) {
             val signInIntent = mGoogleSignInClient.signInIntent
             startActivityForResult(signInIntent, RC_SIGN_IN)
@@ -194,10 +269,10 @@ class MainActivity : AppCompatActivity() {
 
             override fun onRewarded(p0: RewardItem?) {
                 Log.d(TAG, "onRewarded item:$p0")
-                me?.let{
+                me?.let {
                     var ref = FirebaseDatabase.getInstance().reference
                     var key = getKey(it)
-                    var point = if(it.point == null) 0 else it.point
+                    var point = if (it.point == null) 0 else it.point
                     point += 10
                     Log.d(TAG, "onRewarded point:$point")
                     ref.child("users").child(key).child("point").setValue(point)
@@ -215,7 +290,7 @@ class MainActivity : AppCompatActivity() {
         }
         loadRewardedVideoAd()
 
-        mShareAdView = InterstitialAd(this).apply{
+        mShareAdView = InterstitialAd(this).apply {
             adUnitId = "ca-app-pub-8549606613390169/5837153647"
             loadAd(AdRequest.Builder().build())
             adListener = object : AdListener() {
@@ -227,12 +302,27 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadRewardedVideoAd(){
+    private fun loadRewardedVideoAd() {
         mRewardedVideoAd.loadAd(
 //             "ca-app-pub-3940256099942544/5224354917",
             "ca-app-pub-8549606613390169/8372384890",
 //            AdRequest.Builder().addTestDevice("ABEBCC8921F3ABA283C084A2954D0CAE").build())
-                AdRequest.Builder().build())
+            AdRequest.Builder().build()
+        )
+    }
+
+    private fun initForceUpdateCheck() {
+        ForceUpdateChecker.with(this).onUpdateNeeded(ForceUpdateChecker.OnUpdateNeededListener {
+            Log.d(TAG, "updateNeedListener $this")
+            val dialog = AlertDialog.Builder(this)
+                .setTitle("강제 업데이트")
+                .setMessage("업데이트는 필수입니다.")
+                .setPositiveButton(
+                    "Update"
+                ) { _, _ -> redirectStore(it) }
+            dialog.setCancelable(false)
+            dialog.show()
+        }).check()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -264,7 +354,8 @@ class MainActivity : AppCompatActivity() {
                 if (task.isSuccessful) {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "signInWithCredential:success")
-                    val pref = applicationContext.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+                    val pref =
+                        applicationContext.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
                     Log.d(TAG, "name: " + pref.getString("name", "unknown"))
                     if (pref.getString("name", "unknown").equals("unknown")) {
                         InputDialog.build(
@@ -272,7 +363,10 @@ class MainActivity : AppCompatActivity() {
                             "이름을 입력해주세요.", "채팅방에서 사용할 이름을 입력해주세요", "완료",
                             InputDialogOkButtonClickListener { dialog, inputText ->
                                 dialog.dismiss()
-                                val pref = applicationContext.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+                                val pref = applicationContext.getSharedPreferences(
+                                    "NUGASAM",
+                                    Context.MODE_PRIVATE
+                                )
                                 val editor = pref.edit()
                                 editor.putString("name", mAuth.currentUser?.displayName)
                                 editor.putString("image", mAuth.currentUser?.photoUrl.toString())
@@ -281,7 +375,9 @@ class MainActivity : AppCompatActivity() {
                                 Log.d(TAG, "name: $inputText")
 
                                 // TODO 이때 DB에 inputText이름으로 0값으로 새롭게 추가한다!
-                                var usersRef = FirebaseDatabase.getInstance().getReference().child("users").push()
+                                var usersRef =
+                                    FirebaseDatabase.getInstance().getReference().child("users")
+                                        .push()
                                 usersRef.setValue(
                                     User(
                                         inputText,
@@ -303,7 +399,8 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     // If sign in fails, display a message to the user.
                     Log.w(TAG, "signInWithCredential:failure", task.exception)
-                    Snackbar.make(main_layout, "Authentication Failed.", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(main_layout, "Authentication Failed.", Snackbar.LENGTH_SHORT)
+                        .show()
                     finish()
                 }
             }
@@ -317,6 +414,11 @@ class MainActivity : AppCompatActivity() {
 
 
     override fun onBackPressed() {
+        if (drawer!!.isDrawerOpen(GravityCompat.START)) {
+            drawer!!.closeDrawer(GravityCompat.START)
+            return
+        }
+
         if (isInActionMode) {
             clearActionMode()
             myAdapter?.notifyDataSetChanged()
@@ -387,42 +489,26 @@ class MainActivity : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         when (item.itemId) {
-            R.id.action_reorder -> {
-                if (reorder.equals("name")) {
-                    reorder = "nuga"
-                } else {
-                    reorder = "name"
-                }
-                val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
-                var editor = pref.edit()
-                editor.putString("reorder", reorder)
-                editor.commit()
-                loadFirebaseData()
-                return true
-            }
             R.id.action_refresh -> {
                 progress?.visibility = View.VISIBLE
-                FirebaseDatabase.getInstance().getReference().child("users").orderByChild(reorder!!).apply {
-                    addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onCancelled(p0: DatabaseError) {
-                        }
+                FirebaseDatabase.getInstance().getReference().child("users").orderByChild(reorder!!)
+                    .apply {
+                        addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onCancelled(p0: DatabaseError) {
+                            }
 
-                        override fun onDataChange(dataSnapshot: DataSnapshot) {
-                            updateUI(dataSnapshot)
-                            progress?.visibility = View.INVISIBLE
-                            invalidateOptionsMenu()
-                        }
-                    })
-                }
+                            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                                updateUI(dataSnapshot)
+                                progress?.visibility = View.INVISIBLE
+                                invalidateOptionsMenu()
+                            }
+                        })
+                    }
                 return true
             }
             android.R.id.home, R.id.item_cancel -> {
                 clearActionMode()
                 myAdapter?.notifyDataSetChanged()
-                return true
-            }
-            R.id.action_share -> {
-                share()
                 return true
             }
             R.id.action_undo -> {
@@ -439,7 +525,8 @@ class MainActivity : AppCompatActivity() {
                 SelectDialog.build(
                     this@MainActivity, "정말 샀나요?", "", "샀음", { dialog, _ ->
                         var ref = FirebaseDatabase.getInstance().reference
-                        var undoRef = FirebaseDatabase.getInstance().reference.child("history").push()
+                        var undoRef =
+                            FirebaseDatabase.getInstance().reference.child("history").push()
                         var undoData = UndoData()
                         undoData.me = me
                         undoData.date = System.currentTimeMillis().toString()
@@ -462,12 +549,13 @@ class MainActivity : AppCompatActivity() {
                         myAdapter?.notifyDataSetChanged()
                         dialog.dismiss()
 
-                        me?.let{
+                        me?.let {
                             ref.child("users").child(getKey(it)).child("nuga").setValue(it.nuga)
                             if (who.size < it.point) {
                                 var point = if (it.point == null) 0 else it.point
                                 it.point -= who.size
-                                ref.child("users").child(getKey(it)).child("point").setValue(it.point)
+                                ref.child("users").child(getKey(it)).child("point")
+                                    .setValue(it.point)
                                 updateToolbar()
                                 shareDialog()
                             } else {
@@ -556,10 +644,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateToolbar(){
+    private fun updateToolbar() {
         toolbar?.run {
             var sb = StringBuilder()
-            val point = if(me == null) 0 else if(me!!.point == null) 0 else me!!.point
+            val point = if (me == null) 0 else if (me!!.point == null) 0 else me!!.point
             sb.append(resources.getString(R.string.point) + ": " + point)
             title = sb.toString()
         }
@@ -575,19 +663,21 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun loadFirebaseData() {
+    private fun loadFirebaseData() {
         if (query == null) {
             query =
-                FirebaseDatabase.getInstance().getReference().child("users").orderByChild(reorder!!).apply {
-                    addValueEventListener(postListener)
-                }
+                FirebaseDatabase.getInstance().reference.child("users").orderByChild(reorder!!)
+                    .apply {
+                        addValueEventListener(postListener)
+                    }
         } else {
             query?.removeEventListener(postListener)
-            query = FirebaseDatabase.getInstance().getReference().child("users").orderByChild(reorder!!).apply {
-                addValueEventListener(postListener)
-            }
+            query =
+                FirebaseDatabase.getInstance().reference.child("users").orderByChild(reorder!!)
+                    .apply {
+                        addValueEventListener(postListener)
+                    }
         }
-
     }
 
     private fun updateUI(dataSnapshot: DataSnapshot) {
@@ -601,9 +691,16 @@ class MainActivity : AppCompatActivity() {
             val user = postSnapshot.getValue(User::class.java)
             datas.add(user!!)
             dataIndex.add(key!!)
-            Log.d(TAG, "updateUI name:$name, user.name: ${user.name} , user.fullname:${user.fullName}")
+            Log.d(
+                TAG,
+                "updateUI name:$name, user.name: ${user.name} , user.fullname:${user.fullName}"
+            )
             if (name == user.name || name == user.fullName) {
                 me = user
+                Glide.with(this).load(me!!.imageUrl).apply(RequestOptions.circleCropTransform())
+                    .into(navigationThumbnail!!)
+                navigationMeerKat?.text = me?.name
+                navigationPoint?.text = "Point: " + me?.point
                 var editor = pref.edit()
                 editor.putString("key", key)
                 editor.commit()
@@ -619,5 +716,4 @@ class MainActivity : AppCompatActivity() {
         private val TAG = "MainActivity"
         private val RC_SIGN_IN = 9001
     }
-
 }

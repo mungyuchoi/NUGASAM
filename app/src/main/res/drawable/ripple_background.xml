@@ -1,0 +1,4 @@
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+        android:color="?colorControlHighlight">
+    <item android:drawable="@color/gray_press_dark" />
+</ripple>

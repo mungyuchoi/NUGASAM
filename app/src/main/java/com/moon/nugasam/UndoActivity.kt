@@ -85,8 +85,8 @@ class UndoActivity : AppCompatActivity() {
         datas.clear()
         dataIndex.clear()
         var children = dataSnapshot.children.reversed()
-        Log.d("MQ!", "updateUI children count: ${children.size} , progress:$progress")
-        if (children.size == 0) {
+        Log.d(TAG, "updateUI children count: ${children.size} , progress:$progress")
+        if (children.isEmpty()) {
             refresh?.apply {
                 visibility = View.VISIBLE
                 repeatCount = 1
