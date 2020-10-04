@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <integer name="nav_add">123123123</integer>
     <integer name="nav_tbd">23132134</integer>
 </resources>

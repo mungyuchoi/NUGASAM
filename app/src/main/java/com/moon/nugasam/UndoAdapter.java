@@ -13,7 +13,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.firebase.database.*;
 import com.kongzue.dialog.v2.SelectDialog;
-import com.moon.nugasam.data.UndoData;
+import com.moon.nugasam.data.History;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -29,7 +29,7 @@ public class UndoAdapter extends RecyclerView.Adapter<UndoAdapter.ViewHolder> {
     private static final String TAG = "UndoAdapter";
 
     private Activity mActivity;
-    private static ArrayList<UndoData> mDataset;
+    private static ArrayList<History> mDataset;
 
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnLongClickListener {
 
@@ -129,25 +129,25 @@ public class UndoAdapter extends RecyclerView.Adapter<UndoAdapter.ViewHolder> {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     final DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
-                    Query date = ref.child("history").orderByChild("date").equalTo(mDataset.get(getAdapterPosition()).date);
+                    Query date = ref.child("history").orderByChild("date").equalTo(mDataset.get(getAdapterPosition()).getDate());
                     date.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            UndoData undoData = mDataset.get(getAdapterPosition());
+                            History history = mDataset.get(getAdapterPosition());
                             // who의 개수를 확인, me의 full name을 user로부터 가져와서 nuga값에 다가 who의 개수를 뺀다.
                             // 그리고 업데이트
-                            int whosCount = undoData.who.size();
+                            int whosCount = history.getWho().size();
 
 
                             Map childUpdates = new HashMap<String, Object>();
-                            User me = ((UndoActivity) mActivity).getUser(undoData.me.fullName);
-                            me.nuga -= whosCount;
-                            Log.d(TAG, "me : " + undoData.me.fullName + ", whoCount: " + whosCount + ", me key: " + ((UndoActivity) mActivity).getKey(undoData.me));
-                            childUpdates.put("/users/" + ((UndoActivity) mActivity).getKey(undoData.me), me);
+                            User me = ((UndoActivity) mActivity).getUser(history.getMe().getFullName());
+                            me.setNuga(me.getNuga() - whosCount);
+                            Log.d(TAG, "me : " + history.getMe().getFullName() + ", whoCount: " + whosCount + ", me key: " + ((UndoActivity) mActivity).getKey(history.getMe()));
+                            childUpdates.put("/users/" + ((UndoActivity) mActivity).getKey(history.getMe()), me);
                             for (int i = 0; i < whosCount; i++) {
-                                User user = ((UndoActivity) mActivity).getUser(undoData.who.get(i).fullName);
-                                user.nuga += 1;
-                                Log.d(TAG, "who: " + user.fullName + ", key : " + ((UndoActivity) mActivity).getKey(user));
+                                User user = ((UndoActivity) mActivity).getUser(history.getWho().get(i).getFullName());
+                                user.setNuga(user.getNuga() + 1);
+                                Log.d(TAG, "who: " + user.getFullName() + ", key : " + ((UndoActivity) mActivity).getKey(user));
                                 childUpdates.put("/users/" + ((UndoActivity) mActivity).getKey(user), user);
                             }
                             ref.updateChildren(childUpdates);
@@ -179,7 +179,7 @@ public class UndoAdapter extends RecyclerView.Adapter<UndoAdapter.ViewHolder> {
         }
     }
 
-    UndoAdapter(Activity activity, ArrayList<UndoData> dataset) {
+    UndoAdapter(Activity activity, ArrayList<History> dataset) {
         this.mActivity = activity;
         this.mDataset = dataset;
     }
@@ -197,16 +197,16 @@ public class UndoAdapter extends RecyclerView.Adapter<UndoAdapter.ViewHolder> {
         if (mDataset.size() == 0) {
             return;
         }
-        UndoData model = mDataset.get(position);
-        holder.mDateView.setText(DateFormat.getInstance().format(Long.parseLong(model.date)));
-        Glide.with(mActivity).load(model.me.imageUrl).apply(RequestOptions.circleCropTransform()).into(holder.mImageView);
-        holder.mTitleView.setText(model.me.name);
+        History model = mDataset.get(position);
+        holder.mDateView.setText(DateFormat.getInstance().format(Long.parseLong(model.getDate())));
+        Glide.with(mActivity).load(model.getMe().getImageUrl()).apply(RequestOptions.circleCropTransform()).into(holder.mImageView);
+        holder.mTitleView.setText(model.getMe().getName());
 
-        int count = model.who.size();
+        int count = model.getWho().size();
         int index = 0;
         while (index < count) {
-            String imageUrl = model.who.get(index).imageUrl;
-            String title = model.who.get(index).name;
+            String imageUrl = model.getWho().get(index).getImageUrl();
+            String title = model.getWho().get(index).getFullName();
             ImageView imageView = getImageView(holder, index);
             TextView textView = getTextView(holder, index);
             View item = getItemView(holder, index);
@@ -336,9 +336,9 @@ public class UndoAdapter extends RecyclerView.Adapter<UndoAdapter.ViewHolder> {
         return mDataset.size();
     }
 
-    public void addAllData(@NotNull ArrayList<UndoData> list) {
+    public void addAllData(@NotNull ArrayList<History> list) {
         mDataset.clear();
-        for (UndoData model : list) {
+        for (History model : list) {
             mDataset.add(model);
         }
         notifyDataSetChanged();

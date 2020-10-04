@@ -1,7 +1,6 @@
 package com.moon.nugasam
 
 import android.content.Context
-import android.content.DialogInterface
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
@@ -42,10 +41,9 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.ValueEventListener
 import com.infideap.drawerbehavior.AdvanceDrawerLayout
-import com.kongzue.dialog.listener.InputDialogOkButtonClickListener
 import com.kongzue.dialog.v2.InputDialog
 import com.kongzue.dialog.v2.SelectDialog
-import com.moon.nugasam.data.UndoData
+import com.moon.nugasam.data.History
 import com.moon.nugasam.data.User
 import com.moon.nugasam.update.ForceUpdateChecker
 import kotlinx.android.synthetic.main.activity_google.*
@@ -130,6 +128,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             setViewElevation(Gravity.START, 20f)
         }
         navigationView = (findViewById<View>(R.id.nav_view) as NavigationView).apply {
+            menu.addSubMenu("Rooms").run {
+                add(0, R.integer.nav_add, 0, "방 만들기").apply {
+                    icon = getDrawable(R.drawable.ic_add)
+                }
+            }
             menu.addSubMenu("Top Ranking").run {
                 add(0, R.integer.nav_tbd, 0, "TBD...").apply {
                     icon = getDrawable(R.drawable.icon_meerkat)
@@ -146,15 +149,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     }
                 }
             }
-
         }
-
+        Log.i("MQ!", "navigationSetting")
 
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         Log.i("MQ!", "onNavigationItemSelected item:$item, ${item.itemId}")
-        when(item.itemId){
+        when (item.itemId) {
             R.id.nav_share -> {
                 share()
                 drawer!!.closeDrawer(GravityCompat.START)
@@ -176,6 +178,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
             R.integer.nav_tbd -> {
                 Toast.makeText(applicationContext, "업데이트 예정입니다.", Toast.LENGTH_SHORT).show()
+            }
+            R.integer.nav_add -> {
+                Toast.makeText(applicationContext, "방 만들기", Toast.LENGTH_SHORT).show()
+                startActivityForResult(
+                    Intent(
+                        this@MainActivity,
+                        CreateRoomActivity::class.java
+                    ), CREATE_ROOM
+                )
             }
         }
         return true
@@ -357,11 +368,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     val pref =
                         applicationContext.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
                     Log.d(TAG, "name: " + pref.getString("name", "unknown"))
-                    if (pref.getString("name", "unknown").equals("unknown")) {
+                    if (pref.getString("name", "unknown") == "unknown") {
                         InputDialog.build(
                             this@MainActivity,
                             "이름을 입력해주세요.", "채팅방에서 사용할 이름을 입력해주세요", "완료",
-                            InputDialogOkButtonClickListener { dialog, inputText ->
+                            { dialog, inputText ->
                                 dialog.dismiss()
                                 val pref = applicationContext.getSharedPreferences(
                                     "NUGASAM",
@@ -370,23 +381,22 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                                 val editor = pref.edit()
                                 editor.putString("name", mAuth.currentUser?.displayName)
                                 editor.putString("image", mAuth.currentUser?.photoUrl.toString())
+                                var usersRef =
+                                    FirebaseDatabase.getInstance().reference.child("users")
+                                        .push()
+                                editor.putString("key", usersRef.key)
                                 editor.commit()
 
                                 Log.d(TAG, "name: $inputText")
-
-                                // TODO 이때 DB에 inputText이름으로 0값으로 새롭게 추가한다!
-                                var usersRef =
-                                    FirebaseDatabase.getInstance().getReference().child("users")
-                                        .push()
                                 usersRef.setValue(
                                     User(
-                                        inputText,
-                                        0,
-                                        mAuth.currentUser?.photoUrl.toString(),
-                                        mAuth.currentUser?.displayName!!
+                                        name = inputText,
+                                        nuga = 0,
+                                        imageUrl = mAuth.currentUser?.photoUrl.toString(),
+                                        fullName = mAuth.currentUser?.displayName!!
                                     )
                                 )
-                            }, "취소", DialogInterface.OnClickListener { dialog, which ->
+                            }, "취소", { dialog, _ ->
                                 dialog.dismiss()
                                 finish()
                             }).apply {
@@ -477,7 +487,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         var index = 0
         for (u in datas) {
             if (u.name == user.name) {
-                return dataIndex.get(index)
+                return dataIndex[index]
             }
             index++
         }
@@ -491,7 +501,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         when (item.itemId) {
             R.id.action_refresh -> {
                 progress?.visibility = View.VISIBLE
-                FirebaseDatabase.getInstance().getReference().child("users").orderByChild(reorder!!)
+                FirebaseDatabase.getInstance().reference.child("users").orderByChild(reorder!!)
                     .apply {
                         addListenerForSingleValueEvent(object : ValueEventListener {
                             override fun onCancelled(p0: DatabaseError) {
@@ -527,7 +537,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         var ref = FirebaseDatabase.getInstance().reference
                         var undoRef =
                             FirebaseDatabase.getInstance().reference.child("history").push()
-                        var undoData = UndoData()
+                        var undoData = History()
                         undoData.me = me
                         undoData.date = System.currentTimeMillis().toString()
                         var who = ArrayList<User>()
@@ -603,12 +613,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             "공유하시겠습니까?",
             "",
             "공유",
-            DialogInterface.OnClickListener { dialog, inputText ->
+            { dialog, _ ->
                 dialog.dismiss()
                 share()
             },
             "취소",
-            DialogInterface.OnClickListener { dialog, which -> dialog.dismiss() }).apply {
+            { dialog, which -> dialog.dismiss() }).apply {
             setDialogStyle(1)
             showDialog()
         }
@@ -627,13 +637,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
         shareBody += "\nby NUGA3"
         var intent = Intent(android.content.Intent.ACTION_SEND).apply {
-            setType("text/plain")
+            type = "text/plain"
             putExtra(android.content.Intent.EXTRA_TEXT, shareBody)
         }
         startActivity(Intent.createChooser(intent, System.currentTimeMillis().toString()))
     }
 
-    fun clearActionMode() {
+    private fun clearActionMode() {
         isInActionMode = false
         toolbar?.run {
             menu.clear()
@@ -701,9 +711,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     .into(navigationThumbnail!!)
                 navigationMeerKat?.text = me?.name
                 navigationPoint?.text = "Point: " + me?.point
-                var editor = pref.edit()
-                editor.putString("key", key)
-                editor.commit()
             }
         }
         updateToolbar()
@@ -715,5 +722,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     companion object {
         private val TAG = "MainActivity"
         private val RC_SIGN_IN = 9001
+        private val CREATE_ROOM = 9002
     }
 }

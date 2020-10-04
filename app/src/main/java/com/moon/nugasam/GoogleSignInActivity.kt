@@ -166,36 +166,6 @@ class GoogleSignInActivity : BaseActivity(), View.OnClickListener {
             R.id.signInButton -> signIn()
             R.id.signOutButton -> signOut()
             R.id.disconnectButton -> revokeAccess()
-            R.id.profile -> {
-                InputDialog.build(
-                        this@GoogleSignInActivity,
-                        "이름을 입력해주세요.", "채팅방에서 사용할 이름을 입력해주세요", "완료",
-                    { dialog, inputText ->
-                        dialog.dismiss()
-                        val pref = applicationContext.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
-                        val editor = pref.edit()
-                        editor.putString("name", mAuth.currentUser?.displayName)
-                        editor.putString("image", mAuth.currentUser?.photoUrl.toString())
-                        editor.commit()
-
-                        var text =
-                            if (inputText.isNotEmpty()) inputText else mAuth.currentUser?.displayName!!
-                        Log.d(TAG, "name: $text")
-                        profile_name.text = text
-
-                        // TODO 이때 DB에 inputText이름으로 0값으로 새롭게 추가한다!
-                        var key = pref.getString("key","")
-                        var usersRef = FirebaseDatabase.getInstance().reference.child("users")
-                        var meRef = usersRef.child(key)
-                        meRef.updateChildren(HashMap<String, Any>().apply { put("name", text) })
-                    }, "취소", { dialog, _ ->
-                dialog.dismiss()
-            }).apply {
-                    setDialogStyle(1)
-                    setDefaultInputHint(mAuth.currentUser?.displayName)
-                    showDialog()
-                }
-            }
         }
     }
 

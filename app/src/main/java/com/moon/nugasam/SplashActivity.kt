@@ -1,6 +1,5 @@
 package com.moon.nugasam
 
-import android.content.DialogInterface
 import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
 import android.os.Bundle
@@ -14,7 +13,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import com.kongzue.dialog.listener.InputDialogOkButtonClickListener
 import com.kongzue.dialog.v2.InputDialog
 import kotlinx.android.synthetic.main.activity_google.*
 import android.content.Context
@@ -65,7 +63,7 @@ class SplashActivity : AppCompatActivity() {
             try {
                 // Google Sign In was successful, authenticate with Firebase
                 val account = task.getResult(ApiException::class.java)
-                firebaseAuthWithGoogle(account!!)
+//                firebaseAuthWithGoogle(account!!)
             } catch (e: ApiException) {
                 // Google Sign In failed, update UI appropriately
                 Log.w(TAG, "Google sign in failed", e)
@@ -74,66 +72,6 @@ class SplashActivity : AppCompatActivity() {
                 // [END_EXCLUDE]
             }
         }
-    }
-
-
-    private fun firebaseAuthWithGoogle(acct: GoogleSignInAccount) {
-        Log.d(TAG, "firebaseAuthWithGoogle:" + acct.id!!)
-
-        val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
-        mAuth.signInWithCredential(credential)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    // Sign in success, update UI with the signed-in user's information
-                    Log.d(TAG, "signInWithCredential:success")
-                    val pref = applicationContext.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
-                    Log.d(TAG, "name: " + pref.getString("name", "unknown"))
-                    if (pref.getString("name", "unknown").equals("unknown")) {
-                        InputDialog.build(
-                            this@SplashActivity,
-                            "이름을 입력해주세요.", "채팅방에서 사용할 이름을 입력해주세요", "완료",
-                            { dialog, inputText ->
-                                dialog.dismiss()
-                                val pref = applicationContext.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
-                                val editor = pref.edit()
-                                editor.putString("name", mAuth.currentUser?.displayName)
-                                editor.putString("image", mAuth.currentUser?.photoUrl.toString())
-                                editor.commit()
-
-                                var text =
-                                    if (inputText.isNotEmpty()) inputText else mAuth.currentUser?.displayName!!
-                                Log.d(TAG, "name: $text")
-                                startMainActivity()
-
-                                // TODO 이때 DB에 inputText이름으로 0값으로 새롭게 추가한다!
-                                var usersRef = FirebaseDatabase.getInstance().getReference().child("users").push()
-                                usersRef.setValue(
-                                    User(
-                                        text,
-                                        0,
-                                        mAuth.currentUser?.photoUrl.toString(),
-                                        mAuth.currentUser?.displayName!!
-                                    )
-                                )
-                            }, "취소", { dialog, which ->
-                                dialog.dismiss()
-                                finish()
-                            }).apply {
-                            setDialogStyle(1)
-                            setDefaultInputHint(mAuth.currentUser?.displayName)
-                            showDialog()
-                        }
-                    } else {
-                        startMainActivity()
-                    }
-
-                } else {
-                    // If sign in fails, display a message to the user.
-                    Log.w(TAG, "signInWithCredential:failure", task.exception)
-                    Snackbar.make(main_layout, "Authentication Failed.", Snackbar.LENGTH_SHORT).show()
-                    finish()
-                }
-            }
     }
 
     private fun signIn() {

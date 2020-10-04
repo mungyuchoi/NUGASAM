@@ -12,7 +12,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.moon.nugasam.data.UndoData
+import com.moon.nugasam.data.History
 import com.moon.nugasam.data.User
 import kotlinx.android.synthetic.main.activity_undo.*
 import java.util.ArrayList
@@ -24,7 +24,7 @@ class UndoActivity : AppCompatActivity() {
     private var progress: LottieAnimationView? = null
 
     private var dataIndex = ArrayList<String>()
-    private var datas = ArrayList<UndoData>()
+    private var datas = ArrayList<History>()
 
     private var userDataIndex = ArrayList<String>()
     private var userDatas = ArrayList<User>()
@@ -39,7 +39,7 @@ class UndoActivity : AppCompatActivity() {
 
             Log.d(TAG, "onCreate datas$datas")
 
-            undoAdapter = UndoAdapter(this@UndoActivity, datas.clone() as ArrayList<UndoData>?)
+            undoAdapter = UndoAdapter(this@UndoActivity, datas.clone() as ArrayList<History>?)
             setAdapter(undoAdapter)
             Log.d(TAG, "onCreate adapter:$adapter")
             loadFirebaseData()
@@ -97,7 +97,7 @@ class UndoActivity : AppCompatActivity() {
         }
         for (postSnapshot in children) {
             val key = postSnapshot.key
-            val undo = postSnapshot.getValue(UndoData::class.java)
+            val undo = postSnapshot.getValue(History::class.java)
 
             datas.add(undo!!)
             dataIndex.add(key!!)

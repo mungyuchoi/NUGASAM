@@ -82,7 +82,7 @@ class SecondActivity : AppCompatActivity(), View.OnClickListener {
                         val info =
                             arrayOf(user!!.name, user.nuga.toString())
                         val Result =
-                            setTextLength(info[0], 10) + setTextLength(info[1], 10)
+                            setTextLength(info[0]!!, 10) + setTextLength(info[1]!!, 10)
                         arrayData.add(Result)
                         arrayIndex.add(key!!)
                         Log.d("getFirebaseDatabase", "key: $key")
