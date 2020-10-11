@@ -22,12 +22,12 @@ class MyAdapter internal constructor(private val mActivity: Activity, myDataset:
 
     inner class ViewHolder(v: View) : RecyclerView.ViewHolder(v), View.OnClickListener,
         OnLongClickListener {
-        var mImageView: ImageView
-        var mTitleView: TextView
-        var mPointView: TextView
-        var mNugaView: TextView
-        var mIconView: ImageView
-        var mView: View
+        var mImageView: ImageView = v.findViewById(R.id.thumbnail)
+        var mTitleView: TextView = v.findViewById(R.id.title)
+        var mPointView: TextView = v.findViewById(R.id.point)
+        var mNugaView: TextView = v.findViewById(R.id.nuga)
+        var mIconView: ImageView = v.findViewById(R.id.icon)
+        var mView: View = v
         override fun onLongClick(view: View): Boolean {
             val user = (mActivity as MainActivity).getUser(adapterPosition)
             if ((user.name == myName) || (user.fullName == (myName))) {
@@ -60,12 +60,6 @@ class MyAdapter internal constructor(private val mActivity: Activity, myDataset:
         }
 
         init {
-            mTitleView = v.findViewById(R.id.title)
-            mNugaView = v.findViewById(R.id.nuga)
-            mPointView = v.findViewById(R.id.point)
-            mImageView = v.findViewById(R.id.thumbnail)
-            mIconView = v.findViewById(R.id.icon)
-            mView = v
             v.setOnLongClickListener(this)
             v.setOnClickListener(this)
         }
