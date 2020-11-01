@@ -8,7 +8,7 @@ data class Rooms(
 )
 
 data class SimpleUser(
-    var key: String,
-    var nuga: Int,
+    var key: String ="",
+    var nuga: Int = 0,
     var permission: Int = 0
 )

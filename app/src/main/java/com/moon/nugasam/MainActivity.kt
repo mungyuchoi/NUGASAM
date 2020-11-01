@@ -521,15 +521,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 myAdapter?.notifyDataSetChanged()
                 return true
             }
-            R.id.action_undo -> {
-                startActivity(
-                    Intent(
-                        this@MainActivity,
-                        UndoActivity::class.java
-                    )
-                )
-                return true
-            }
+//            R.id.action_undo -> {
+//                startActivity(
+//                    Intent(
+//                        this@MainActivity,
+//                        UndoActivity::class.java
+//                    )
+//                )
+//                return true
+//            }
             R.id.item_done -> {
                 Log.d(TAG, "done clicked selectionList:$selectionList me:$me")
                 SelectDialog.build(

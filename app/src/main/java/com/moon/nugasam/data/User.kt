@@ -11,5 +11,5 @@ data class User(
 )
 
 data class SimpleRoom(
-    var key: String
+    var key: String = ""
 )

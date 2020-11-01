@@ -115,6 +115,7 @@ class MyAdapter internal constructor(private val mActivity: Activity, myDataset:
         return mDataset.size
     }
 
+
     fun addAllData(list: ArrayList<User>) {
         mDataset.clear()
         for (model: User in list) {

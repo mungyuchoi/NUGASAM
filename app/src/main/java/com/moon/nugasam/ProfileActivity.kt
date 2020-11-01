@@ -53,7 +53,7 @@ class ProfileActivity : AppCompatActivity() {
                         editor.commit()
 
                         var key = pref.getString("key","")
-                        FirebaseDatabase.getInstance().reference.child("users")
+                        FirebaseDatabase.getInstance().reference.child("tusers")
                             .child(key).child("name").setValue(inputText)
                         dialog.dismiss()
                     }, "취소", {dialog, _ -> { dialog.dismiss()}}
@@ -111,7 +111,7 @@ class ProfileActivity : AppCompatActivity() {
                     val downloadUri = task.result
                     Log.i(TAG, "downloadUri:$downloadUri, key:$key")
                     // me의 url에 업데이트 하기
-                    FirebaseDatabase.getInstance().reference.child("users")
+                    FirebaseDatabase.getInstance().reference.child("tusers")
                         .child(key).child("imageUrl").setValue(downloadUri.toString())
                 } else {
                     // todo handle
@@ -129,13 +129,13 @@ class ProfileActivity : AppCompatActivity() {
     private fun loadFirebaseData() {
         if (query == null) {
             query =
-                FirebaseDatabase.getInstance().reference.child("users").orderByChild(reorder!!)
+                FirebaseDatabase.getInstance().reference.child("tusers").orderByChild(reorder!!)
                     .apply {
                         addValueEventListener(postListener)
                     }
         } else {
             query?.removeEventListener(postListener)
-            query = FirebaseDatabase.getInstance().reference.child("users").orderByChild(reorder!!)
+            query = FirebaseDatabase.getInstance().reference.child("tusers").orderByChild(reorder!!)
                 .apply {
                     addValueEventListener(postListener)
                 }
