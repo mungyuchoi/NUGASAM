@@ -100,22 +100,21 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
                     activity.meerkatAdapter.notifyDataSetChanged()
                     dialog.dismiss()
 
-                    Log.i("MQ!", "point: ${activity.me?.point}")
-//                    var point = activity.me?.point ?: 0
-//                    if (activity.selectionList.size < point) {
-//                        point -= activity.selectionList.size
-//                        FirebaseDatabase.getInstance().reference.child("tusers").child(keyMe).child("point")
-//                            .run {
-//                                setValue(point)
-//                            }
-//                        activity.shareDialog()
-//                    } else {
-//                        if (activity.shareAdView.isLoaded) {
-//                            activity.shareAdView.show()
-//                        } else {
-//                            activity.shareDialog()
-//                        }
-//                    }
+                    var point = activity.me?.point ?: 0
+                    if (activity.selectionList.size < point) {
+                        point -= activity.selectionList.size
+                        FirebaseDatabase.getInstance().reference.child("tusers").child(keyMe).child("point")
+                            .run {
+                                setValue(point)
+                            }
+                        activity.shareDialog()
+                    } else {
+                        if (activity.shareAdView.isLoaded) {
+                            activity.shareAdView.show()
+                        } else {
+                            activity.shareDialog()
+                        }
+                    }
                 }, "취소", { dialog, _ ->
                     dialog.dismiss()
                     activity.clearActionMode()

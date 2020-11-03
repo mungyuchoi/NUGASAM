@@ -33,6 +33,7 @@ import com.moon.nugasam.MainActivityV2.Companion.RC_SIGN_IN
 import com.moon.nugasam.MainActivityV2.Companion.TAG
 import com.moon.nugasam.ad.AdvertiseManager
 import com.moon.nugasam.constant.PrefConstants
+import com.moon.nugasam.data.Rooms
 import com.moon.nugasam.data.SimpleRoom
 import com.moon.nugasam.data.SimpleUser
 import com.moon.nugasam.data.User
@@ -55,6 +56,9 @@ class MainActivityV2 : AppCompatActivity() {
     var progress: LottieAnimationView? = null
     val userKeys = ArrayList<String>()
     val userInfo = ArrayList<User>()
+    val roomKeys = ArrayList<String>()
+    val roomInfo = ArrayList<Rooms>()
+
     var me: User? = null
     var selectionList = ArrayList<User>()
     var isInActionMode = false
@@ -107,7 +111,36 @@ class MainActivityV2 : AppCompatActivity() {
             loading.observe(this@MainActivityV2, Observer { isLoading ->
                 Log.i(TAG, "loading isLoading:$isLoading")
                 progress?.visibility =
-                        if (isLoading) View.VISIBLE else View.GONE
+                    if (isLoading) View.VISIBLE else View.GONE
+            })
+            _roomInfo.observe(this@MainActivityV2, Observer {
+                roomInfo.clear()
+                roomKeys.clear()
+                var size = it.size
+                var index = 0
+                it.let { list ->
+                    for (simpleRoom in list) {
+                        val ref = FirebaseDatabase.getInstance().reference.child("rooms")
+                            .child(simpleRoom.key)
+                        ref.addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                Log.i(TAG, "onDataChange snapshot:$snapshot")
+                                (snapshot.getValue(Rooms::class.java) as Rooms).run {
+                                    roomInfo.add(this)
+                                    roomKeys.add(snapshot.key!!)
+                                    Log.i(TAG, "room:${roomInfo.size}, index:$index")
+                                    index++
+                                    if (size == index) {
+                                        drawerManager.update(roomInfo)
+                                    }
+                                }
+                            }
+
+                            override fun onCancelled(p0: DatabaseError) {
+                            }
+                        })
+                    }
+                }
             })
             _data.observe(this@MainActivityV2, Observer {
                 Log.i(TAG, "data observe:$it size:${it.data?.size}")
@@ -128,7 +161,10 @@ class MainActivityV2 : AppCompatActivity() {
                                     Log.i(TAG, "data userInfo:${userInfo.size}, index:$index")
                                     index++
                                     if (size == index) {
-                                        Log.i(TAG, "submitList userInfo:$userInfo, userKeys:$userKeys")
+                                        Log.i(
+                                            TAG,
+                                            "submitList userInfo:$userInfo, userKeys:$userKeys"
+                                        )
                                         meerkatAdapter.submitList(userInfo.distinct())
                                         meerkatAdapter.notifyDataSetChanged()
                                     }
@@ -137,7 +173,8 @@ class MainActivityV2 : AppCompatActivity() {
                                     var userName = pref.getString(PrefConstants.KEY_NAME, "")
                                     if (name == userName) {
                                         me = this
-                                        Glide.with(this@MainActivityV2).load(this.imageUrl).apply(RequestOptions.circleCropTransform())
+                                        Glide.with(this@MainActivityV2).load(this.imageUrl)
+                                            .apply(RequestOptions.circleCropTransform())
                                             .into(navigationThumbnail!!)
                                         navigationMeerKat?.text = me?.name
                                         navigationPoint?.text = "Point: " + me?.point
@@ -274,6 +311,7 @@ class MeerkatViewModel(private val application: Application, activity: AppCompat
     private var query: Query? = null
 
     private var roomInfo = ArrayList<SimpleRoom>()
+    var _roomInfo = MutableLiveData<List<SimpleRoom>>()
     var simpleUserInfo = ArrayList<SimpleUser>()
     var _data = MutableLiveData<SingleDataResponse<List<SimpleUser>>>()
     val loading: LiveData<Boolean> = _data.map { it.status == LOADING }
@@ -291,9 +329,30 @@ class MeerkatViewModel(private val application: Application, activity: AppCompat
                     for (childDataSnapshot in dataSnapshot.children) {
                         roomInfo.add(childDataSnapshot.getValue(SimpleRoom::class.java)!!)
                     }
-                    // TODO choice one room!!
-                    val choiceRoom = roomInfo[0]
+                    Log.d(TAG, "loadUserRoomData roomInfo size${roomInfo.size}")
+                    if (roomInfo.size == 0) {
+                        return
+                    }
+                    var choiceRoom = roomInfo[0]
+                    when (roomInfo.size) {
+                        1 -> {
+                            choiceRoom = roomInfo[0]
+                        }
+                        else -> {
+                            val keyRoom = pref.getString(PrefConstants.KEY_ROOM, "")
+                            if (keyRoom != null && keyRoom != "") {
+                                for (room in roomInfo) {
+                                    if (keyRoom == room.key) {
+                                        choiceRoom = room
+                                        break
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    _roomInfo.postValue(roomInfo)
                     Log.i(TAG, "choiceRoom:$choiceRoom")
+
                     pref.edit().apply {
                         putString(PrefConstants.KEY_ROOM, choiceRoom.key)
                         commit()
@@ -360,7 +419,7 @@ class MeerkatViewModel(private val application: Application, activity: AppCompat
                 val pref = activity.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
                 var name = pref.getString(PrefConstants.KEY_NAME, "")
                 Log.i(TAG, "edit : $authName name:$name")
-                if (authName != null && authName != name){
+                if (authName != null && authName != name) {
                     pref.edit().apply {
                         putString(PrefConstants.KEY_NAME, authName)
                         commit()

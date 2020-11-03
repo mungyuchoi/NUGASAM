@@ -13,6 +13,7 @@ import com.infideap.drawerbehavior.AdvanceDrawerLayout
 import com.moon.nugasam.MainActivityV2
 import com.moon.nugasam.ProfileActivity
 import com.moon.nugasam.R
+import com.moon.nugasam.data.Rooms
 
 class DrawerLayoutManager(private val activity: MainActivityV2): NavigationView.OnNavigationItemSelectedListener {
     fun initialize() {
@@ -67,6 +68,10 @@ class DrawerLayoutManager(private val activity: MainActivityV2): NavigationView.
             }
         }
         return true
+    }
+
+    fun update(roomInfo: List<Rooms>) {
+        Log.i("MQ!", "update: $roomInfo")
     }
 
     companion object {
