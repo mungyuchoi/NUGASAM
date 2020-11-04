@@ -1,6 +1,9 @@
 package com.moon.nugasam.drawer
 
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.util.Log
 import android.view.Gravity
 import android.view.MenuItem
@@ -8,6 +11,10 @@ import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.google.android.material.navigation.NavigationView
 import com.infideap.drawerbehavior.AdvanceDrawerLayout
 import com.moon.nugasam.MainActivityV2
@@ -33,16 +40,11 @@ class DrawerLayoutManager(private val activity: MainActivityV2): NavigationView.
             }
 
             navigationView = (findViewById<View>(R.id.nav_view) as NavigationView).apply {
-                menu.addSubMenu("Rooms").run {
-                    add(0, R.integer.nav_add, 0, "방 만들기").apply {
-                        icon = getDrawable(R.drawable.ic_add)
-                    }
-                }
-                menu.addSubMenu("Top Ranking").run {
-                    add(0, R.integer.nav_tbd, 0, "TBD...").apply {
-                        icon = getDrawable(R.drawable.icon_meerkat)
-                    }
-                }
+//                menu.addSubMenu("Top Ranking").run {
+//                    add(0, R.integer.nav_tbd, 0, "TBD...").apply {
+//                        icon = getDrawable(R.drawable.icon_meerkat)
+//                    }
+//                }
                 setNavigationItemSelectedListener(this@DrawerLayoutManager)
                 getHeaderView(0).run {
                     navigationThumbnail = findViewById(R.id.thumbnail)
@@ -71,7 +73,32 @@ class DrawerLayoutManager(private val activity: MainActivityV2): NavigationView.
     }
 
     fun update(roomInfo: List<Rooms>) {
-        Log.i("MQ!", "update: $roomInfo")
+        Log.i(TAG, "update: $roomInfo")
+        activity.run {
+            navigationView.run {
+                menu.addSubMenu("Rooms").run {
+                    var index = 0
+                    for(room in roomInfo){
+                        add(0, index++, 0, room.title).apply{
+                           Glide.with(activity).asBitmap().apply(RequestOptions.circleCropTransform()).load(room.imageUrl).into(object: CustomTarget<Bitmap>(){
+                               override fun onResourceReady(
+                                   resource: Bitmap,
+                                   transition: Transition<in Bitmap>?
+                               ) {
+                                   icon = BitmapDrawable(activity.resources, resource)
+                               }
+
+                               override fun onLoadCleared(placeholder: Drawable?) {
+                               }
+                           })
+                        }
+                    }
+                    add(0, R.integer.nav_add, 0, "방 만들기").apply {
+                        icon = getDrawable(R.drawable.ic_add)
+                    }
+                }
+            }
+        }
     }
 
     companion object {
