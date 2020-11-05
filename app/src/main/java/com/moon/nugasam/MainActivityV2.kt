@@ -131,7 +131,7 @@ class MainActivityV2 : AppCompatActivity() {
                                     Log.i(TAG, "room:${roomInfo.size}, index:$index")
                                     index++
                                     if (size == index) {
-                                        drawerManager.update(roomInfo)
+                                        drawerManager.update()
                                     }
                                 }
                             }
@@ -381,7 +381,7 @@ class MeerkatViewModel(private val application: Application, activity: AppCompat
         }
     }
 
-    private fun loadRoomUserData(roomKey: String) {
+    fun loadRoomUserData(roomKey: String) {
         if (query == null) {
             query =
                 FirebaseDatabase.getInstance().reference.child("rooms").child(roomKey)
