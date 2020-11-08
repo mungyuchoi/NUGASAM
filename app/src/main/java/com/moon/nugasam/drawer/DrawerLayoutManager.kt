@@ -7,6 +7,7 @@ import android.graphics.drawable.Drawable
 import android.util.Log
 import android.view.Gravity
 import android.view.MenuItem
+import android.view.SubMenu
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -18,10 +19,11 @@ import com.bumptech.glide.request.transition.Transition
 import com.google.android.material.navigation.NavigationView
 import com.infideap.drawerbehavior.AdvanceDrawerLayout
 import com.moon.nugasam.*
-import com.moon.nugasam.data.Rooms
 
 class DrawerLayoutManager(private val activity: MainActivityV2) :
     NavigationView.OnNavigationItemSelectedListener {
+
+    var subMenu: SubMenu? = null
 
     fun initialize() {
         activity.run {
@@ -65,7 +67,10 @@ class DrawerLayoutManager(private val activity: MainActivityV2) :
                 return true
             }
             R.integer.nav_add -> {
-                activity.startActivity(Intent(activity, CreateRoomActivity::class.java))
+                var intent = Intent(activity, CreateRoomActivity::class.java)
+                intent.putParcelableArrayListExtra("simpleRoom", activity.viewModel.roomInfos)
+                Log.i("MQ!", "putParcelable data:${activity.viewModel.roomInfos}")
+                activity.startActivity(intent)
                 return true
             }
         }
@@ -87,10 +92,12 @@ class DrawerLayoutManager(private val activity: MainActivityV2) :
         Log.i(TAG, "update: $roomInfo")
         activity.run {
             navigationView.run {
+                if (subMenu != null) {
+                    subMenu!!.clear()
+                }
                 menu.addSubMenu("Rooms").run {
-                    var index = 0
-                    for (room in roomInfo) {
-                        add(0, index++, 0, room.title).apply {
+                    for ((index, room) in roomInfo.withIndex()) {
+                        add(0, index, 0, room.title).apply {
                             Glide.with(activity).asBitmap()
                                 .apply(RequestOptions.circleCropTransform()).load(room.imageUrl)
                                 .into(object : CustomTarget<Bitmap>() {
@@ -109,6 +116,7 @@ class DrawerLayoutManager(private val activity: MainActivityV2) :
                     add(0, R.integer.nav_add, 0, "방 만들기").apply {
                         icon = getDrawable(R.drawable.ic_add)
                     }
+                    subMenu = this
                 }
             }
         }

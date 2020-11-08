@@ -1,8 +1,10 @@
 package com.moon.nugasam
 
 import android.app.Application
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -13,6 +15,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.*
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieAnimationView
@@ -75,6 +78,12 @@ class MainActivityV2 : AppCompatActivity() {
     var navigationPoint: TextView? = null
     private val drawerManager = DrawerLayoutManager(this)
 
+    private val updateRoomReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            viewModel.loadUserRoomData()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -132,6 +141,7 @@ class MainActivityV2 : AppCompatActivity() {
                                     index++
                                     if (size == index) {
                                         drawerManager.update()
+                                        updateToolbar()
                                     }
                                 }
                             }
@@ -194,6 +204,14 @@ class MainActivityV2 : AppCompatActivity() {
                 // TODO 방만들기, 방검색으로 Layout짜서 만들기
             })
         }
+
+        LocalBroadcastManager.getInstance(this)
+            .registerReceiver(updateRoomReceiver, IntentFilter("updateRoom"))
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(updateRoomReceiver)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -224,8 +242,27 @@ class MainActivityV2 : AppCompatActivity() {
             inflateMenu(R.menu.main)
             supportActionBar?.setDisplayHomeAsUpEnabled(false)
             selectionList.clear()
-            title = "누가 살 차례인가요?"
+            updateToolbar()
         }
+    }
+
+    private fun updateToolbar() {
+        toolbar?.run {
+            title = getMyRoom()?.title
+        }
+    }
+
+    private fun getMyRoom(): Rooms? {
+        val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+        val keyRoom = pref.getString(PrefConstants.KEY_ROOM, "")
+        if (keyRoom != null && keyRoom != "") {
+            for ((index, roomKey) in roomKeys.withIndex()) {
+                if (roomKey == keyRoom) {
+                    return roomInfo[index]
+                }
+            }
+        }
+        return null
     }
 
     fun prepareToolbar(position: Int) {
@@ -310,7 +347,7 @@ class MeerkatViewModel(private val application: Application, activity: AppCompat
     private var auth: FirebaseAuth? = null
     private var query: Query? = null
 
-    private var roomInfo = ArrayList<SimpleRoom>()
+    var roomInfos = ArrayList<SimpleRoom>()
     var _roomInfo = MutableLiveData<List<SimpleRoom>>()
     var simpleUserInfo = ArrayList<SimpleUser>()
     var _data = MutableLiveData<SingleDataResponse<List<SimpleUser>>>()
@@ -320,28 +357,28 @@ class MeerkatViewModel(private val application: Application, activity: AppCompat
     }
 
     fun loadUserRoomData() {
-        roomInfo.clear()
+        roomInfos.clear()
         val pref = application.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
         val key = pref.getString(PrefConstants.KEY_ME, "")
         FirebaseDatabase.getInstance().reference.child("tusers").child(key).child("rooms").run {
             addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     for (childDataSnapshot in dataSnapshot.children) {
-                        roomInfo.add(childDataSnapshot.getValue(SimpleRoom::class.java)!!)
+                        roomInfos.add(childDataSnapshot.getValue(SimpleRoom::class.java)!!)
                     }
-                    Log.d(TAG, "loadUserRoomData roomInfo size${roomInfo.size}")
-                    if (roomInfo.size == 0) {
+                    Log.d(TAG, "loadUserRoomData roomInfo size${roomInfos.size}")
+                    if (roomInfos.size == 0) {
                         return
                     }
-                    var choiceRoom = roomInfo[0]
-                    when (roomInfo.size) {
+                    var choiceRoom = roomInfos[0]
+                    when (roomInfos.size) {
                         1 -> {
-                            choiceRoom = roomInfo[0]
+                            choiceRoom = roomInfos[0]
                         }
                         else -> {
                             val keyRoom = pref.getString(PrefConstants.KEY_ROOM, "")
                             if (keyRoom != null && keyRoom != "") {
-                                for (room in roomInfo) {
+                                for (room in roomInfos) {
                                     if (keyRoom == room.key) {
                                         choiceRoom = room
                                         break
@@ -350,7 +387,7 @@ class MeerkatViewModel(private val application: Application, activity: AppCompat
                             }
                         }
                     }
-                    _roomInfo.postValue(roomInfo)
+                    _roomInfo.postValue(roomInfos)
                     Log.i(TAG, "choiceRoom:$choiceRoom")
 
                     pref.edit().apply {

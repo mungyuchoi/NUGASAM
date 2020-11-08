@@ -1,5 +1,8 @@
 package com.moon.nugasam.data
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
+
 data class User(
     var name: String? = null,
     var imageUrl: String? = null,
@@ -10,6 +13,7 @@ data class User(
     var rooms: List<SimpleRoom>? = null
 )
 
+@Parcelize
 data class SimpleRoom(
     var key: String = ""
-)
+): Parcelable

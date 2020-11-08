@@ -7,16 +7,12 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 import com.kongzue.dialog.v2.SelectDialog
 import com.moon.nugasam.MainActivityV2
 import com.moon.nugasam.R
 import com.moon.nugasam.SettingsActivity
 import com.moon.nugasam.constant.PrefConstants
-import com.moon.nugasam.data.FirebaseData
 import com.moon.nugasam.data.SimpleUser
 
 class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {

@@ -11,6 +11,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.google.firebase.database.DatabaseReference
@@ -29,6 +30,7 @@ class CreateRoomActivity : AppCompatActivity() {
     private lateinit var storageRef: StorageReference
     private lateinit var databaseRef: DatabaseReference
     private var downloadUrl: Uri? = null
+    private var roomInfo: ArrayList<SimpleRoom>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,6 +39,8 @@ class CreateRoomActivity : AppCompatActivity() {
         storageRef = FirebaseStorage.getInstance().getReference("Rooms")
         databaseRef = FirebaseDatabase.getInstance().reference.child("rooms").push()
 
+        roomInfo = intent.getParcelableArrayListExtra<SimpleRoom>("simpleRoom")
+        Log.i("MQ!", "roomInfo:$roomInfo")
         thumbnail = findViewById<ImageView>(R.id.dotted_circle).apply {
             setOnClickListener {
                 chooserFile()
@@ -54,19 +58,22 @@ class CreateRoomActivity : AppCompatActivity() {
                 databaseRef.setValue(
                     Rooms(imageUrl = downloadUrl?.toString(),
                         title = editText.text.toString(),
+                        description = "Introduce",
                         users = ArrayList<SimpleUser>().apply {
                             add(SimpleUser(pref.getString("key", ""), nuga = 0, permission = 1))
                         }
                     ))
-                // Todo User의 Rooms에 SimpleRoom key값 추가하기
                 FirebaseDatabase.getInstance().reference.child("tusers").child(
                     pref.getString("key", "")
-                ).child("rooms").setValue(ArrayList<SimpleRoom>().apply{
-                    add(SimpleRoom(databaseRef.key!!))
-                })
+                ).child("rooms").setValue(
+                    roomInfo?.apply {
+                        add(SimpleRoom(databaseRef.key!!))
+                    })
 
                 Toast.makeText(context, "방을 만들었습니다.", Toast.LENGTH_SHORT).show()
                 finish()
+
+                LocalBroadcastManager.getInstance(context).sendBroadcast(Intent("updateRoom"))
             }
         }
     }
