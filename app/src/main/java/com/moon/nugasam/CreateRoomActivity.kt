@@ -40,7 +40,6 @@ class CreateRoomActivity : AppCompatActivity() {
         databaseRef = FirebaseDatabase.getInstance().reference.child("rooms").push()
 
         roomInfo = intent.getParcelableArrayListExtra<SimpleRoom>("simpleRoom")
-        Log.i("MQ!", "roomInfo:$roomInfo")
         thumbnail = findViewById<ImageView>(R.id.dotted_circle).apply {
             setOnClickListener {
                 chooserFile()

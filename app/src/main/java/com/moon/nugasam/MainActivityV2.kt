@@ -177,6 +177,7 @@ class MainActivityV2 : AppCompatActivity() {
                                         )
                                         meerkatAdapter.submitList(userInfo.distinct())
                                         meerkatAdapter.notifyDataSetChanged()
+                                        updateToolbar()
                                     }
 
                                     val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
@@ -247,6 +248,7 @@ class MainActivityV2 : AppCompatActivity() {
     }
 
     private fun updateToolbar() {
+        Log.i(TAG, "updateToolbar")
         toolbar?.run {
             title = getMyRoom()?.title
         }
@@ -419,6 +421,11 @@ class MeerkatViewModel(private val application: Application, activity: AppCompat
     }
 
     fun loadRoomUserData(roomKey: String) {
+        val pref = application.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+        pref.edit().apply {
+            putString(PrefConstants.KEY_ROOM, roomKey)
+            commit()
+        }
         if (query == null) {
             query =
                 FirebaseDatabase.getInstance().reference.child("rooms").child(roomKey)
@@ -438,9 +445,6 @@ class MeerkatViewModel(private val application: Application, activity: AppCompat
     }
 
     init {
-        val pref = application.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
-        //reorder = pref.getString("reorder", "name")
-
         FirebaseApp.initializeApp(application)
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(application.getString(R.string.default_web_client_id))

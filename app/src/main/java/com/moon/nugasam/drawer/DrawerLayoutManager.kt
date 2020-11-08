@@ -69,7 +69,6 @@ class DrawerLayoutManager(private val activity: MainActivityV2) :
             R.integer.nav_add -> {
                 var intent = Intent(activity, CreateRoomActivity::class.java)
                 intent.putParcelableArrayListExtra("simpleRoom", activity.viewModel.roomInfos)
-                Log.i("MQ!", "putParcelable data:${activity.viewModel.roomInfos}")
                 activity.startActivity(intent)
                 return true
             }
