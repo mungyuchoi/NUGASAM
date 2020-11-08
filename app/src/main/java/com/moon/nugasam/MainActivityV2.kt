@@ -254,7 +254,7 @@ class MainActivityV2 : AppCompatActivity() {
         }
     }
 
-    private fun getMyRoom(): Rooms? {
+    fun getMyRoom(): Rooms? {
         val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
         val keyRoom = pref.getString(PrefConstants.KEY_ROOM, "")
         if (keyRoom != null && keyRoom != "") {

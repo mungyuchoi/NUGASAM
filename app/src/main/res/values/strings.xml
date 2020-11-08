@@ -5,6 +5,7 @@
     <string name="nav_header_title">Android Studio</string>
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
+    <string name="action_exit">방 나가기</string>
     <string name="action_settings">설정</string>
     <string name="action_profile">프로필</string>
     <string name="action_cat">야옹</string>

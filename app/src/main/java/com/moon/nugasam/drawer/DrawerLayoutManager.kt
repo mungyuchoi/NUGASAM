@@ -76,7 +76,7 @@ class DrawerLayoutManager(private val activity: MainActivityV2) :
         val roomInfo = activity.roomInfo
         var index = 0
         for (room in roomInfo) {
-            if (item.title == room.title) {
+            if (item.title == room.title + " (#${room.code})") {
                 activity.viewModel.loadRoomUserData(activity.roomKeys[index])
                 activity.drawer!!.closeDrawer(GravityCompat.START)
                 break
@@ -96,7 +96,7 @@ class DrawerLayoutManager(private val activity: MainActivityV2) :
                 }
                 menu.addSubMenu("Rooms").run {
                     for ((index, room) in roomInfo.withIndex()) {
-                        add(0, index, 0, room.title).apply {
+                        add(0, index, 0, room.title + " (#${room.code})").apply {
                             Glide.with(activity).asBitmap()
                                 .apply(RequestOptions.circleCropTransform()).load(room.imageUrl)
                                 .into(object : CustomTarget<Bitmap>() {

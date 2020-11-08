@@ -8,6 +8,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.ktx.Firebase
 import com.kongzue.dialog.v2.SelectDialog
 import com.moon.nugasam.MainActivityV2
 import com.moon.nugasam.R
@@ -45,6 +46,59 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
 //                Log.d(TAG, "action_undo")
 //                return true
 //            }
+            R.id.action_exit -> {
+                Log.d(TAG, "action_exit")
+                // 방의 유저정보를 가져온다
+                // 유저가 두명이상이라면 방정보의 유저정보 삭제, 유저정보의 방정보에서 삭제
+                // 유저가 한명이라면 방을 삭제, 유저정보의 방정보에서 삭제
+                activity.getMyRoom()?.run {
+                    val pref = activity.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+                    val keyMe = pref.getString(PrefConstants.KEY_ME, "")
+                    val keyRoom = pref.getString(PrefConstants.KEY_ROOM, "")
+                    when (users?.size) {
+                        1 -> {
+                            for (room in activity.viewModel.roomInfos) {
+                                if (room.key == keyRoom) {
+                                    activity.viewModel.roomInfos.remove(room)
+                                    break
+                                }
+                            }
+                            FirebaseDatabase.getInstance().reference.child("tusers").child(keyMe)
+                                .child("rooms").setValue(activity.viewModel.roomInfos)
+
+                            FirebaseDatabase.getInstance().reference.child("rooms").child(keyRoom)
+                                .removeValue()
+                            activity.viewModel.loadUserRoomData()
+                            activity.clearActionMode()
+                            activity.meerkatAdapter.notifyDataSetChanged()
+                        }
+                        else -> {
+                            for (room in activity.viewModel.roomInfos) {
+                                if (room.key == keyRoom) {
+                                    activity.viewModel.roomInfos.remove(room)
+                                    break
+                                }
+                            }
+                            FirebaseDatabase.getInstance().reference.child("tusers").child(keyMe)
+                                .child("rooms").setValue(activity.viewModel.roomInfos)
+
+                            for (user in activity.viewModel.simpleUserInfo) {
+                                if (user.key == keyMe) {
+                                    activity.viewModel.simpleUserInfo.remove(user)
+                                    break
+                                }
+                            }
+                            
+                            FirebaseDatabase.getInstance().reference.child("rooms").child(keyRoom)
+                                .setValue(activity.viewModel.simpleUserInfo)
+                            activity.viewModel.loadUserRoomData()
+                            activity.clearActionMode()
+                            activity.meerkatAdapter.notifyDataSetChanged()
+                        }
+                    }
+                }
+                return true
+            }
             R.id.action_manager -> {
                 Log.d(TAG, "action_manager")
                 return true
@@ -99,7 +153,8 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
                     var point = activity.me?.point ?: 0
                     if (activity.selectionList.size < point) {
                         point -= activity.selectionList.size
-                        FirebaseDatabase.getInstance().reference.child("tusers").child(keyMe).child("point")
+                        FirebaseDatabase.getInstance().reference.child("tusers").child(keyMe)
+                            .child("point")
                             .run {
                                 setValue(point)
                             }

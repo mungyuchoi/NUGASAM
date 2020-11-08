@@ -58,6 +58,7 @@ class CreateRoomActivity : AppCompatActivity() {
                     Rooms(imageUrl = downloadUrl?.toString(),
                         title = editText.text.toString(),
                         description = "Introduce",
+                        code = rand(1000, 9999),
                         users = ArrayList<SimpleUser>().apply {
                             add(SimpleUser(pref.getString("key", ""), nuga = 0, permission = 1))
                         }
@@ -130,6 +131,11 @@ class CreateRoomActivity : AppCompatActivity() {
 
     private fun getExtension(uri: Uri): String =
         MimeTypeMap.getSingleton().getExtensionFromMimeType(contentResolver.getType(uri))
+
+    private fun rand(start: Int, end: Int): Int {
+        require(start <= end) { "Illegal Argument"}
+        return (start..end).random()
+    }
 
     companion object {
         const val TAG = "CreateRoomActivity"

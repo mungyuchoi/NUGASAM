@@ -4,6 +4,7 @@ data class Rooms(
     var imageUrl: String? = null,
     var description: String? = null,
     var title: String? = null,
+    var code: Int ? = 9999,
     var users: List<SimpleUser>?= null
 )
 
