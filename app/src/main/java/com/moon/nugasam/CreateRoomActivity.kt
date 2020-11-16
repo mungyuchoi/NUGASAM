@@ -11,6 +11,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -67,6 +68,8 @@ class CreateRoomActivity : AppCompatActivity() {
                     pref.getString("key", "")
                 ).child("rooms").setValue(
                     roomInfo?.apply {
+                        add(SimpleRoom(databaseRef.key!!))
+                    } ?: ArrayList<SimpleRoom>().apply {
                         add(SimpleRoom(databaseRef.key!!))
                     })
 

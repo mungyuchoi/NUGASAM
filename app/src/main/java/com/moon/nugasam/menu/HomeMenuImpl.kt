@@ -27,6 +27,8 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
         if (activity.me?.permission == 1) {
             menu?.findItem(R.id.action_manager)?.isVisible = true
         }
+        menu?.findItem(R.id.action_exit)?.isVisible =
+            activity.getMyRoom() != null
         return true
     }
 
@@ -68,6 +70,7 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
 
                             FirebaseDatabase.getInstance().reference.child("rooms").child(keyRoom)
                                 .removeValue()
+                            activity.meerkatAdapter.submitList(null)
                             activity.viewModel.loadUserRoomData()
                             activity.clearActionMode()
                             activity.meerkatAdapter.notifyDataSetChanged()
@@ -88,7 +91,7 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
                                     break
                                 }
                             }
-                            
+
                             FirebaseDatabase.getInstance().reference.child("rooms").child(keyRoom)
                                 .setValue(activity.viewModel.simpleUserInfo)
                             activity.viewModel.loadUserRoomData()

@@ -1,5 +1,6 @@
 package com.moon.nugasam.drawer
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
@@ -10,6 +11,7 @@ import android.view.MenuItem
 import android.view.SubMenu
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import com.bumptech.glide.Glide
@@ -17,8 +19,11 @@ import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.google.android.material.navigation.NavigationView
+import com.google.firebase.database.FirebaseDatabase
 import com.infideap.drawerbehavior.AdvanceDrawerLayout
 import com.moon.nugasam.*
+import com.moon.nugasam.constant.PrefConstants
+import com.moon.nugasam.data.FirebaseData
 
 class DrawerLayoutManager(private val activity: MainActivityV2) :
     NavigationView.OnNavigationItemSelectedListener {
@@ -67,9 +72,24 @@ class DrawerLayoutManager(private val activity: MainActivityV2) :
                 return true
             }
             R.integer.nav_add -> {
-                var intent = Intent(activity, CreateRoomActivity::class.java)
-                intent.putParcelableArrayListExtra("simpleRoom", activity.viewModel.roomInfos)
-                activity.startActivity(intent)
+                activity.me?.run {
+                    if (point >= 100) {
+                        var intent = Intent(activity, CreateRoomActivity::class.java)
+                        intent.putParcelableArrayListExtra(
+                            "simpleRoom",
+                            activity.viewModel.roomInfos
+                        )
+                        activity.startActivity(intent)
+                        val pref = activity.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+                        val key = pref.getString(PrefConstants.KEY_ME, "")
+                        FirebaseDatabase.getInstance().reference.child("tusers").child(key)
+                            .child("point").setValue(point - 100)
+                    } else {
+                        Toast.makeText(activity, "포인트 100점이상만 방을 만들 수 있습니다.", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                }
+
                 return true
             }
         }

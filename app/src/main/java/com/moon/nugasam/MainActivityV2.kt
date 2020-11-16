@@ -50,6 +50,7 @@ import com.moon.nugasam.repository.SingleDataStatus.*
 class MainActivityV2 : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
+    private lateinit var emptyView: View
     private val homeMenu = HomeMenuImpl(this)
 
     lateinit var meerkatAdapter: MeerkatAdapter
@@ -112,6 +113,12 @@ class MainActivityV2 : AppCompatActivity() {
             setRecycledViewPool(RecyclerView.RecycledViewPool())
         }
 
+        emptyView = findViewById<View>(R.id.empty_view).apply {
+            setOnClickListener {
+                startActivity(Intent(this@MainActivityV2, CreateRoomActivity::class.java))
+            }
+        }
+
         viewModel = ViewModelProvider(this, MeerkatViewModel.Factory(application, this)).get(
             MeerkatViewModel::class.java
         )
@@ -153,6 +160,7 @@ class MainActivityV2 : AppCompatActivity() {
                 }
             })
             _data.observe(this@MainActivityV2, Observer {
+                if (it == null) return@Observer
                 Log.i(TAG, "data observe:$it size:${it.data?.size}")
                 userInfo.clear()
                 userKeys.clear()
@@ -200,9 +208,14 @@ class MainActivityV2 : AppCompatActivity() {
                     }
                 }
             })
-            empty.observe(this@MainActivityV2, Observer {
-                Log.i(TAG, "empty observe:$it")
-                // TODO 방만들기, 방검색으로 Layout짜서 만들기
+            empty.observe(this@MainActivityV2, Observer { isEmpty ->
+                Log.i(TAG, "empty observe:$isEmpty")
+                if (isEmpty) {
+                    progress?.visibility = View.GONE
+                    emptyView.visibility = View.VISIBLE
+                } else {
+                    emptyView.visibility = View.GONE
+                }
             })
         }
 
@@ -370,6 +383,7 @@ class MeerkatViewModel(private val application: Application, activity: AppCompat
                     }
                     Log.d(TAG, "loadUserRoomData roomInfo size${roomInfos.size}")
                     if (roomInfos.size == 0) {
+                        _data.postValue(SingleDataResponse.success(ArrayList()))
                         return
                     }
                     var choiceRoom = roomInfos[0]
