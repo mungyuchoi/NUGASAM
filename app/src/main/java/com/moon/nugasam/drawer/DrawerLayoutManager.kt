@@ -117,6 +117,10 @@ class DrawerLayoutManager(private val activity: MainActivityV2) :
                 menu.addSubMenu("Rooms").run {
                     for ((index, room) in roomInfo.withIndex()) {
                         add(0, index, 0, room.title + " (#${room.code})").apply {
+                            if (room.imageUrl == null) {
+                                icon = resources.getDrawable(R.drawable.icon_meerkat, null)
+                                return@apply
+                            }
                             Glide.with(activity).asBitmap()
                                 .apply(RequestOptions.circleCropTransform()).load(room.imageUrl)
                                 .into(object : CustomTarget<Bitmap>() {
@@ -124,6 +128,7 @@ class DrawerLayoutManager(private val activity: MainActivityV2) :
                                         resource: Bitmap,
                                         transition: Transition<in Bitmap>?
                                     ) {
+                                        Log.i(TAG, "onResourceReady resource:$resource")
                                         icon = BitmapDrawable(activity.resources, resource)
                                     }
 
