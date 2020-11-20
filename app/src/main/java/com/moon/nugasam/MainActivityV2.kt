@@ -25,12 +25,17 @@ import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.InterstitialAd
 import com.google.android.gms.ads.reward.RewardedVideoAd
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.google.android.material.navigation.NavigationView
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.*
 import com.infideap.drawerbehavior.AdvanceDrawerLayout
+import com.kongzue.dialog.v2.InputDialog
 import com.kongzue.dialog.v2.SelectDialog
 import com.moon.nugasam.MainActivityV2.Companion.RC_SIGN_IN
 import com.moon.nugasam.MainActivityV2.Companion.TAG
@@ -46,6 +51,7 @@ import com.moon.nugasam.extension.map
 import com.moon.nugasam.menu.HomeMenuImpl
 import com.moon.nugasam.repository.SingleDataResponse
 import com.moon.nugasam.repository.SingleDataStatus.*
+import kotlinx.android.synthetic.main.activity_google.*
 
 class MainActivityV2 : AppCompatActivity() {
 
@@ -130,6 +136,7 @@ class MainActivityV2 : AppCompatActivity() {
                     if (isLoading) View.VISIBLE else View.GONE
             })
             _roomInfo.observe(this@MainActivityV2, Observer {
+                Log.i(TAG, "room observe:$it size:${it.size}")
                 roomInfo.clear()
                 roomKeys.clear()
                 var size = it.size
@@ -176,7 +183,7 @@ class MainActivityV2 : AppCompatActivity() {
                                     this.nuga = simpleUser.nuga
                                     userInfo.add(this)
                                     userKeys.add(snapshot.key!!)
-                                    Log.i(TAG, "data userInfo:${userInfo.size}, index:$index")
+                                    Log.i(TAG, "data userInfo:${userInfo}, index:$index")
                                     index++
                                     if (size == index) {
                                         Log.i(
@@ -190,7 +197,8 @@ class MainActivityV2 : AppCompatActivity() {
 
                                     val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
                                     var userName = pref.getString(PrefConstants.KEY_NAME, "")
-                                    if (name == userName) {
+                                    Log.i(TAG, "data userName:${userName}, name:$name, fullName:$fullName")
+                                    if (name == userName || fullName == userName) {
                                         me = this
                                         Glide.with(this@MainActivityV2).load(this.imageUrl)
                                             .apply(RequestOptions.circleCropTransform())
@@ -238,6 +246,22 @@ class MainActivityV2 : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         return homeMenu.onOptionsItemSelected(item!!)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        Log.d(TAG, "onActivityResult requestCode : $requestCode")
+        if (requestCode == RC_SIGN_IN) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+            try {
+                // Google Sign In was successful, authenticate with Firebase
+                val account = task.getResult(ApiException::class.java)
+                firebaseAuthWithGoogle(account!!)
+            } catch (e: ApiException) {
+                Log.w(TAG, "Google sign in failed", e)
+                finish()
+            }
+        }
     }
 
     override fun onBackPressed() {
@@ -350,6 +374,67 @@ class MainActivityV2 : AppCompatActivity() {
         startActivity(Intent.createChooser(intent, System.currentTimeMillis().toString()))
     }
 
+    private fun firebaseAuthWithGoogle(acct: GoogleSignInAccount) {
+        Log.d(TAG, "firebaseAuthWithGoogle:" + acct.id!!)
+
+        val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
+        viewModel.auth?.signInWithCredential(credential)!!
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    // Sign in success, update UI with the signed-in user's information
+                    Log.d(TAG, "signInWithCredential:success")
+                    val pref =
+                        applicationContext.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+                    Log.d(TAG, "name: " + pref.getString("name", "unknown"))
+                    if (pref.getString("name", "unknown") == "unknown") {
+                        InputDialog.build(
+                            this@MainActivityV2,
+                            "이름을 입력해주세요.", "채팅방에서 사용할 이름을 입력해주세요", "완료",
+                            { dialog, inputText ->
+                                dialog.dismiss()
+                                val pref = applicationContext.getSharedPreferences(
+                                    "NUGASAM",
+                                    MODE_PRIVATE
+                                )
+                                val editor = pref.edit()
+                                editor.putString("name", viewModel.auth?.currentUser?.displayName)
+                                editor.putString("image", viewModel.auth?.currentUser?.photoUrl.toString())
+                                var usersRef =
+                                    FirebaseDatabase.getInstance().reference.child("tusers")
+                                        .push()
+                                editor.putString("key", usersRef.key)
+                                editor.commit()
+
+                                Log.d(TAG, "name: $inputText")
+                                usersRef.setValue(
+                                    User(
+                                        name = inputText,
+                                        point = 0,
+                                        nuga = 0,
+                                        imageUrl = viewModel.auth?.currentUser?.photoUrl.toString(),
+                                        fullName = viewModel.auth?.currentUser?.displayName!!
+                                    )
+                                )
+                            }, "취소", { dialog, _ ->
+                                dialog.dismiss()
+                                finish()
+                            }).apply {
+                            setDialogStyle(1)
+                            setDefaultInputHint(viewModel.auth?.currentUser?.displayName)
+                            showDialog()
+                        }
+                    }
+
+                } else {
+                    // If sign in fails, display a message to the user.
+                    Log.w(TAG, "signInWithCredential:failure", task.exception)
+                    Snackbar.make(main_layout, "Authentication Failed.", Snackbar.LENGTH_SHORT)
+                        .show()
+                    finish()
+                }
+            }
+    }
+
     companion object {
         const val TAG = "MainActivity"
         val RC_SIGN_IN = 9001
@@ -359,7 +444,7 @@ class MainActivityV2 : AppCompatActivity() {
 class MeerkatViewModel(private val application: Application, activity: AppCompatActivity) :
     ViewModel() {
 
-    private var auth: FirebaseAuth? = null
+    var auth: FirebaseAuth? = null
     private var query: Query? = null
 
     var roomInfos = ArrayList<SimpleRoom>()

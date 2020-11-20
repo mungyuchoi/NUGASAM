@@ -157,7 +157,7 @@ class ProfileActivity : AppCompatActivity() {
             }
         }
 
-        me.run {
+        me?.run {
             Glide.with(this@ProfileActivity).load(me!!.imageUrl)
                 .apply(RequestOptions.circleCropTransform())
                 .into(thumbnail!!)
