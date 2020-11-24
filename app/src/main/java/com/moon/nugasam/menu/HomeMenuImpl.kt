@@ -2,12 +2,18 @@ package com.moon.nugasam.menu
 
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.ACTION_SEND
+import android.content.Intent.EXTRA_TEXT
+import android.net.Uri
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.dynamiclinks.DynamicLink
+import com.google.firebase.dynamiclinks.FirebaseDynamicLinks
+import com.google.firebase.dynamiclinks.ktx.*
 import com.google.firebase.ktx.Firebase
 import com.kongzue.dialog.v2.SelectDialog
 import com.moon.nugasam.MainActivityV2
@@ -48,6 +54,10 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
 //                Log.d(TAG, "action_undo")
 //                return true
 //            }
+            R.id.action_invite -> {
+                Log.d("MQ!", "action_invite")
+                inviteClick()
+            }
             R.id.action_exit -> {
                 Log.d(TAG, "action_exit")
                 // 방의 유저정보를 가져온다
@@ -182,6 +192,39 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
         }
         return false
     }
+
+    private fun getUriLink() : Uri {
+        val pref = activity.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+        val keyRoom = pref.getString(PrefConstants.KEY_ROOM, "")
+        return Uri.parse("https://www.nugasam.com/invite?key=$keyRoom")
+    }
+
+
+    private fun inviteClick() {
+        Firebase.dynamicLinks.shortLinkAsync {
+            link = getUriLink()
+            domainUriPrefix = "https://nugasam.page.link"
+            androidParameters("com.moon.nugasam") {
+                minimumVersion = 23
+            }
+            googleAnalyticsParameters {
+                source = "orkut"
+                medium = "social"
+                campaign = "example-promo"
+            }
+        }.addOnSuccessListener { (shortLink, flowchartLink) ->
+            Log.i("MQ!", "addOnSuccessListener shortLink: $shortLink flowchartLink: $flowchartLink" )
+            val intent = Intent().apply {
+                action = ACTION_SEND
+                putExtra(EXTRA_TEXT, shortLink.toString())
+                type ="text/plain"
+            }
+            activity.startActivity(Intent.createChooser(intent, "Share"))
+        }.addOnFailureListener {
+            Log.i("MQ!", "addOnFailureListener" )
+        }
+    }
+
 
     companion object {
         private val TAG = "HomeMenuImpl"

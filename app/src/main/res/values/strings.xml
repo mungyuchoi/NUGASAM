@@ -18,6 +18,7 @@
     <string name="action_refresh">Refresh</string>
     <string name="action_smile">Smile</string>
     <string name="action_meerkat">미어캣</string>
+    <string name="action_invite">방 초대</string>
 
     <string name="label_google_sign_in">Firebase + Google Sign In</string>
     <string name="desc_google_sign_in">Use a Google Sign In credential to authenticate with Firebase.</string>
