@@ -17,6 +17,7 @@ import com.google.firebase.dynamiclinks.ktx.*
 import com.google.firebase.ktx.Firebase
 import com.kongzue.dialog.v2.SelectDialog
 import com.moon.nugasam.MainActivityV2
+import com.moon.nugasam.MainActivityV2.Companion.SEGMENT_INVITE
 import com.moon.nugasam.R
 import com.moon.nugasam.SettingsActivity
 import com.moon.nugasam.constant.PrefConstants
@@ -196,7 +197,7 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
     private fun getUriLink() : Uri {
         val pref = activity.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
         val keyRoom = pref.getString(PrefConstants.KEY_ROOM, "")
-        return Uri.parse("https://www.nugasam.com/invite?key=$keyRoom")
+        return Uri.parse("https://www.nugasam.com/$SEGMENT_INVITE?key=$keyRoom")
     }
 
 
@@ -205,7 +206,7 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
             link = getUriLink()
             domainUriPrefix = "https://nugasam.page.link"
             androidParameters("com.moon.nugasam") {
-                minimumVersion = 23
+                minimumVersion = 21
             }
             googleAnalyticsParameters {
                 source = "orkut"

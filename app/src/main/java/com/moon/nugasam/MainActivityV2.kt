@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -34,6 +35,9 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.*
+import com.google.firebase.dynamiclinks.FirebaseDynamicLinks
+import com.google.firebase.dynamiclinks.ktx.dynamicLinks
+import com.google.firebase.ktx.Firebase
 import com.infideap.drawerbehavior.AdvanceDrawerLayout
 import com.kongzue.dialog.v2.InputDialog
 import com.kongzue.dialog.v2.SelectDialog
@@ -51,6 +55,7 @@ import com.moon.nugasam.extension.map
 import com.moon.nugasam.menu.HomeMenuImpl
 import com.moon.nugasam.repository.SingleDataResponse
 import com.moon.nugasam.repository.SingleDataStatus.*
+import com.moon.nugasam.widget.NugasamLinearLayoutManager
 import kotlinx.android.synthetic.main.activity_google.*
 
 class MainActivityV2 : AppCompatActivity() {
@@ -114,7 +119,7 @@ class MainActivityV2 : AppCompatActivity() {
 
         recyclerView = findViewById<RecyclerView>(R.id.recyclerView).apply {
             setHasFixedSize(true)
-            layoutManager = LinearLayoutManager(this@MainActivityV2)
+            layoutManager = NugasamLinearLayoutManager(this@MainActivityV2)
             this.adapter = meerkatAdapter
             setRecycledViewPool(RecyclerView.RecycledViewPool())
         }
@@ -229,6 +234,8 @@ class MainActivityV2 : AppCompatActivity() {
 
         LocalBroadcastManager.getInstance(this)
             .registerReceiver(updateRoomReceiver, IntentFilter("updateRoom"))
+
+        handleDeepLink()
     }
 
     override fun onDestroy() {
@@ -435,8 +442,64 @@ class MainActivityV2 : AppCompatActivity() {
             }
     }
 
+    private fun handleDeepLink() {
+        Firebase.dynamicLinks.getDynamicLink(intent)
+            .addOnSuccessListener(this){ pendingDynamicLinkData ->
+                var deepLink: Uri? = null
+                if (pendingDynamicLinkData != null) {
+                    deepLink = pendingDynamicLinkData.link
+                    if(deepLink?.lastPathSegment == SEGMENT_INVITE){
+                        val keyRoom = deepLink.getQueryParameter("key")
+                        keyRoomsUser = keyRoom
+                        Log.d("MQ!", "handleDeepLink keyRoom:$keyRoom, roomsInfos:${viewModel.roomInfos.size}")
+                        // Update Rooms user
+                        FirebaseDatabase.getInstance().reference.child("rooms").child(keyRoom)
+                            .child("users")
+                            .apply {
+                                addListenerForSingleValueEvent(roomsUserListener)
+                            }
+
+                    }
+                }
+            }
+            .addOnFailureListener(this) {
+                e-> Log.w(TAG, "onFailure", e)
+            }
+    }
+
+    private var keyRoomsUser: String = ""
+    private var roomsUserInfo = ArrayList<SimpleUser>()
+    private var roomsUserListener = object : ValueEventListener {
+        override fun onDataChange(dataSnapshot: DataSnapshot) {
+            roomsUserInfo.clear()
+            for (childDataSnapshot in dataSnapshot.children) {
+                roomsUserInfo.add(childDataSnapshot.getValue(SimpleUser::class.java)!!.apply {
+                    Log.i(TAG, "roomsUserListener add $nuga")
+                })
+            }
+            val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+            val keyMe = pref.getString(PrefConstants.KEY_ME, "")
+            roomsUserInfo.add(SimpleUser(key=keyMe, nuga = 0, permission = 0))
+            FirebaseDatabase.getInstance().reference.child("rooms").child(keyRoomsUser!!)
+                .child("users").setValue(roomsUserInfo)
+            FirebaseDatabase.getInstance().reference.child("tusers").child(keyMe)
+                .child("rooms").setValue(viewModel.roomInfos.apply {
+                    add(SimpleRoom(keyRoomsUser))
+                })
+            pref.edit().apply {
+                putString(PrefConstants.KEY_ROOM, keyRoomsUser)
+                commit()
+            }
+            viewModel.loadUserRoomData()
+        }
+
+        override fun onCancelled(p0: DatabaseError) {
+        }
+    }
+
     companion object {
         const val TAG = "MainActivity"
+        const val SEGMENT_INVITE = "invite"
         val RC_SIGN_IN = 9001
     }
 }
