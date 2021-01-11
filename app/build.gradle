@@ -9,13 +9,13 @@ apply plugin: 'com.google.gms.google-services'
 com.google.gms.googleservices.GoogleServicesPlugin.config.disableVersionCheck = true
 
 android {
-    compileSdkVersion 28
     defaultConfig {
+    compileSdkVersion 28
         applicationId "com.moon.nugasam"
         minSdkVersion 22
         targetSdkVersion 28
-        versionCode 22
-        versionName "1.22"
+        versionCode 23
+        versionName "1.23"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         renderscriptTargetApi 19

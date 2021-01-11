@@ -64,7 +64,7 @@ class CreateRoomActivity : AppCompatActivity() {
                             add(SimpleUser(pref.getString("key", ""), nuga = 0, permission = 1))
                         }
                     ))
-                FirebaseDatabase.getInstance().reference.child("tusers").child(
+                FirebaseDatabase.getInstance().reference.child("users").child(
                     pref.getString("key", "")
                 ).child("rooms").setValue(
                     roomInfo?.apply {

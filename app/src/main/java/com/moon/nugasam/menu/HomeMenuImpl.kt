@@ -76,7 +76,7 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
                                     break
                                 }
                             }
-                            FirebaseDatabase.getInstance().reference.child("tusers").child(keyMe)
+                            FirebaseDatabase.getInstance().reference.child("users").child(keyMe)
                                 .child("rooms").setValue(activity.viewModel.roomInfos)
 
                             FirebaseDatabase.getInstance().reference.child("rooms").child(keyRoom)
@@ -93,7 +93,7 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
                                     break
                                 }
                             }
-                            FirebaseDatabase.getInstance().reference.child("tusers").child(keyMe)
+                            FirebaseDatabase.getInstance().reference.child("users").child(keyMe)
                                 .child("rooms").setValue(activity.viewModel.roomInfos)
 
                             for (user in activity.viewModel.simpleUserInfo) {
@@ -167,7 +167,7 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
                     var point = activity.me?.point ?: 0
                     if (activity.selectionList.size < point) {
                         point -= activity.selectionList.size
-                        FirebaseDatabase.getInstance().reference.child("tusers").child(keyMe)
+                        FirebaseDatabase.getInstance().reference.child("users").child(keyMe)
                             .child("point")
                             .run {
                                 setValue(point)

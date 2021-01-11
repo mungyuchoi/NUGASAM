@@ -17,7 +17,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.*
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieAnimationView
 import com.bumptech.glide.Glide
@@ -35,7 +34,6 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.*
-import com.google.firebase.dynamiclinks.FirebaseDynamicLinks
 import com.google.firebase.dynamiclinks.ktx.dynamicLinks
 import com.google.firebase.ktx.Firebase
 import com.infideap.drawerbehavior.AdvanceDrawerLayout
@@ -180,7 +178,7 @@ class MainActivityV2 : AppCompatActivity() {
                 var index = 0
                 it.data?.let { list ->
                     for (simpleUser in list) {
-                        val ref = FirebaseDatabase.getInstance().reference.child("tusers")
+                        val ref = FirebaseDatabase.getInstance().reference.child("users")
                             .child(simpleUser.key)
                         ref.addListenerForSingleValueEvent(object : ValueEventListener {
                             override fun onDataChange(snapshot: DataSnapshot) {
@@ -407,7 +405,7 @@ class MainActivityV2 : AppCompatActivity() {
                                 editor.putString("name", viewModel.auth?.currentUser?.displayName)
                                 editor.putString("image", viewModel.auth?.currentUser?.photoUrl.toString())
                                 var usersRef =
-                                    FirebaseDatabase.getInstance().reference.child("tusers")
+                                    FirebaseDatabase.getInstance().reference.child("users")
                                         .push()
                                 editor.putString("key", usersRef.key)
                                 editor.commit()
@@ -482,7 +480,7 @@ class MainActivityV2 : AppCompatActivity() {
             roomsUserInfo.add(SimpleUser(key=keyMe, nuga = 0, permission = 0))
             FirebaseDatabase.getInstance().reference.child("rooms").child(keyRoomsUser!!)
                 .child("users").setValue(roomsUserInfo)
-            FirebaseDatabase.getInstance().reference.child("tusers").child(keyMe)
+            FirebaseDatabase.getInstance().reference.child("users").child(keyMe)
                 .child("rooms").setValue(viewModel.roomInfos.apply {
                     add(SimpleRoom(keyRoomsUser))
                 })
@@ -523,7 +521,7 @@ class MeerkatViewModel(private val application: Application, activity: AppCompat
         roomInfos.clear()
         val pref = application.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
         val key = pref.getString(PrefConstants.KEY_ME, "")
-        FirebaseDatabase.getInstance().reference.child("tusers").child(key).child("rooms").run {
+        FirebaseDatabase.getInstance().reference.child("users").child(key).child("rooms").run {
             addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     for (childDataSnapshot in dataSnapshot.children) {

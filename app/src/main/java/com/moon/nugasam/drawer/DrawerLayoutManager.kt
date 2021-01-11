@@ -82,7 +82,7 @@ class DrawerLayoutManager(private val activity: MainActivityV2) :
                         activity.startActivity(intent)
                         val pref = activity.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
                         val key = pref.getString(PrefConstants.KEY_ME, "")
-                        FirebaseDatabase.getInstance().reference.child("tusers").child(key)
+                        FirebaseDatabase.getInstance().reference.child("users").child(key)
                             .child("point").setValue(point - 100)
                     } else {
                         Toast.makeText(activity, "포인트 100점이상만 방을 만들 수 있습니다.", Toast.LENGTH_SHORT)

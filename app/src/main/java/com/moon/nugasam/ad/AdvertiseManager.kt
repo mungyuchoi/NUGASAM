@@ -81,7 +81,7 @@ class AdvertiseManager(private val activity: MainActivityV2) {
                     activity.me?.let {
                         var point = if (it.point == null) 0 else it.point
                         point += 10
-                        FirebaseDatabase.getInstance().reference.child("tusers").child(key)
+                        FirebaseDatabase.getInstance().reference.child("users").child(key)
                             .child("point").setValue(point)
                     }
                 }
