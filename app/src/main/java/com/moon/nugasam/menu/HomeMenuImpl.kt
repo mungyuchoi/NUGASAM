@@ -104,6 +104,7 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
                             }
 
                             FirebaseDatabase.getInstance().reference.child("rooms").child(keyRoom)
+                                .child("users")
                                 .setValue(activity.viewModel.simpleUserInfo)
                             activity.viewModel.loadUserRoomData()
                             activity.clearActionMode()

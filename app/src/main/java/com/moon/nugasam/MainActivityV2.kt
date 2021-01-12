@@ -13,6 +13,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.*
@@ -53,6 +54,7 @@ import com.moon.nugasam.extension.map
 import com.moon.nugasam.menu.HomeMenuImpl
 import com.moon.nugasam.repository.SingleDataResponse
 import com.moon.nugasam.repository.SingleDataStatus.*
+import com.moon.nugasam.update.ForceUpdateChecker
 import com.moon.nugasam.widget.NugasamLinearLayoutManager
 import kotlinx.android.synthetic.main.activity_google.*
 
@@ -98,7 +100,7 @@ class MainActivityV2 : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initView()
-
+        initForceUpdateCheck()
         adManager.initialize()
         drawerManager.initialize()
     }
@@ -234,6 +236,26 @@ class MainActivityV2 : AppCompatActivity() {
             .registerReceiver(updateRoomReceiver, IntentFilter("updateRoom"))
 
         handleDeepLink()
+    }
+
+    private fun initForceUpdateCheck() {
+        ForceUpdateChecker.with(this).onUpdateNeeded(ForceUpdateChecker.OnUpdateNeededListener {
+            Log.d(TAG, "updateNeedListener $this")
+            val dialog = AlertDialog.Builder(this)
+                .setTitle("강제 업데이트")
+                .setMessage("업데이트는 필수입니다.")
+                .setPositiveButton(
+                    "Update"
+                ) { _, _ -> redirectStore(it) }
+            dialog.setCancelable(false)
+            dialog.show()
+        }).check()
+    }
+
+    private fun redirectStore(updateUrl: String) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(updateUrl))
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
     }
 
     override fun onDestroy() {
