@@ -185,6 +185,9 @@ class MainActivityV2 : AppCompatActivity() {
                         ref.addListenerForSingleValueEvent(object : ValueEventListener {
                             override fun onDataChange(snapshot: DataSnapshot) {
                                 (snapshot.getValue(User::class.java) as User).run {
+                                    if (userKeys.contains(snapshot.key)) {
+                                        return
+                                    }
                                     this.nuga = simpleUser.nuga
                                     userInfo.add(this)
                                     userKeys.add(snapshot.key!!)
@@ -195,14 +198,19 @@ class MainActivityV2 : AppCompatActivity() {
                                             TAG,
                                             "submitList userInfo:$userInfo, userKeys:$userKeys"
                                         )
-                                        meerkatAdapter.submitList(userInfo.distinct())
+                                        sortUsers()
+
+                                        meerkatAdapter.submitList(userInfo)
                                         meerkatAdapter.notifyDataSetChanged()
                                         updateToolbar()
                                     }
 
                                     val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
                                     var userName = pref.getString(PrefConstants.KEY_NAME, "")
-                                    Log.i(TAG, "data userName:${userName}, name:$name, fullName:$fullName")
+                                    Log.i(
+                                        TAG,
+                                        "data userName:${userName}, name:$name, fullName:$fullName"
+                                    )
                                     if (name == userName || fullName == userName) {
                                         me = this
                                         Glide.with(this@MainActivityV2).load(this.imageUrl)
@@ -236,6 +244,30 @@ class MainActivityV2 : AppCompatActivity() {
             .registerReceiver(updateRoomReceiver, IntentFilter("updateRoom"))
 
         handleDeepLink()
+    }
+
+    private fun sortUsers() {
+        (0 until userInfo.size - 1).forEach { i ->
+            (0 until userInfo.size - 1).forEach { j ->
+                val firstValue = userInfo[j]
+                val secondValue = userInfo[j + 1]
+
+                val firstValueKey = userKeys[j]
+                val secondValueKey = userKeys[j + 1]
+
+                if (firstValue.nuga > secondValue.nuga) {
+                    userInfo.add(j, secondValue)
+                    userInfo.removeAt(j + 1)
+                    userInfo.add(j + 1, firstValue)
+                    userInfo.removeAt(j + 2)
+
+                    userKeys.add(j, secondValueKey)
+                    userKeys.removeAt(j + 1)
+                    userKeys.add(j + 1, firstValueKey)
+                    userKeys.removeAt(j + 2)
+                }
+            }
+        }
     }
 
     private fun initForceUpdateCheck() {
@@ -425,7 +457,10 @@ class MainActivityV2 : AppCompatActivity() {
                                 )
                                 val editor = pref.edit()
                                 editor.putString("name", viewModel.auth?.currentUser?.displayName)
-                                editor.putString("image", viewModel.auth?.currentUser?.photoUrl.toString())
+                                editor.putString(
+                                    "image",
+                                    viewModel.auth?.currentUser?.photoUrl.toString()
+                                )
                                 var usersRef =
                                     FirebaseDatabase.getInstance().reference.child("users")
                                         .push()
@@ -464,14 +499,17 @@ class MainActivityV2 : AppCompatActivity() {
 
     private fun handleDeepLink() {
         Firebase.dynamicLinks.getDynamicLink(intent)
-            .addOnSuccessListener(this){ pendingDynamicLinkData ->
+            .addOnSuccessListener(this) { pendingDynamicLinkData ->
                 var deepLink: Uri? = null
                 if (pendingDynamicLinkData != null) {
                     deepLink = pendingDynamicLinkData.link
-                    if(deepLink?.lastPathSegment == SEGMENT_INVITE){
+                    if (deepLink?.lastPathSegment == SEGMENT_INVITE) {
                         val keyRoom = deepLink.getQueryParameter("key")
                         keyRoomsUser = keyRoom
-                        Log.d("MQ!", "handleDeepLink keyRoom:$keyRoom, roomsInfos:${viewModel.roomInfos.size}")
+                        Log.d(
+                            "MQ!",
+                            "handleDeepLink keyRoom:$keyRoom, roomsInfos:${viewModel.roomInfos.size}"
+                        )
                         // Update Rooms user
                         FirebaseDatabase.getInstance().reference.child("rooms").child(keyRoom)
                             .child("users")
@@ -482,8 +520,8 @@ class MainActivityV2 : AppCompatActivity() {
                     }
                 }
             }
-            .addOnFailureListener(this) {
-                e-> Log.w(TAG, "onFailure", e)
+            .addOnFailureListener(this) { e ->
+                Log.w(TAG, "onFailure", e)
             }
     }
 
@@ -499,7 +537,7 @@ class MainActivityV2 : AppCompatActivity() {
             }
             val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
             val keyMe = pref.getString(PrefConstants.KEY_ME, "")
-            roomsUserInfo.add(SimpleUser(key=keyMe, nuga = 0, permission = 0))
+            roomsUserInfo.add(SimpleUser(key = keyMe, nuga = 0, permission = 0))
             FirebaseDatabase.getInstance().reference.child("rooms").child(keyRoomsUser!!)
                 .child("users").setValue(roomsUserInfo)
             FirebaseDatabase.getInstance().reference.child("users").child(keyMe)
