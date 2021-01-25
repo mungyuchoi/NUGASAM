@@ -13,6 +13,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -499,33 +500,63 @@ class MainActivityV2 : AppCompatActivity() {
 
     private fun handleDeepLink() {
         Firebase.dynamicLinks.getDynamicLink(intent)
-            .addOnSuccessListener(this) { pendingDynamicLinkData ->
+            .addOnSuccessListener(this){ pendingDynamicLinkData ->
                 var deepLink: Uri? = null
                 if (pendingDynamicLinkData != null) {
                     deepLink = pendingDynamicLinkData.link
-                    if (deepLink?.lastPathSegment == SEGMENT_INVITE) {
+                    if(deepLink?.lastPathSegment == SEGMENT_INVITE){
+                        val time = deepLink.getQueryParameter("time")
+                        if (System.currentTimeMillis() > time.toLong()){
+                            Toast.makeText(applicationContext, "Sorry!! time limit!", Toast.LENGTH_SHORT).show()
+                        }
+
                         val keyRoom = deepLink.getQueryParameter("key")
+
+                        //TODO  Check rooms.child("keyRoom").users included keyMe handle
                         keyRoomsUser = keyRoom
-                        Log.d(
-                            "MQ!",
-                            "handleDeepLink keyRoom:$keyRoom, roomsInfos:${viewModel.roomInfos.size}"
-                        )
-                        // Update Rooms user
-                        FirebaseDatabase.getInstance().reference.child("rooms").child(keyRoom)
+                        FirebaseDatabase.getInstance().reference.child("rroms").child(keyRoom)
                             .child("users")
                             .apply {
-                                addListenerForSingleValueEvent(roomsUserListener)
+                                addListenerForSingleValueEvent(validUserListener)
                             }
-
                     }
                 }
             }
-            .addOnFailureListener(this) { e ->
-                Log.w(TAG, "onFailure", e)
+            .addOnFailureListener(this) {
+                    e-> Log.w(TAG, "onFailure", e)
             }
     }
-
     private var keyRoomsUser: String = ""
+    private var validUserListener = object: ValueEventListener {
+        override fun onDataChange(dataSnapshot: DataSnapshot) {
+            roomsUserInfo.clear()
+            for (childDataSnapshot in dataSnapshot.children) {
+                roomsUserInfo.add(childDataSnapshot.getValue(SimpleUser::class.java)!!.apply {
+                    Log.i(TAG, "roomsUserListener add $nuga")
+                })
+            }
+            val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+            val keyMe = pref.getString(PrefConstants.KEY_ME, "")
+
+            val duplicate = roomsUserInfo.filter {
+                it.key.contains(keyMe)
+            }
+
+            if (duplicate.isNotEmpty()) {
+                Toast.makeText(applicationContext, "Sorry!!", Toast.LENGTH_SHORT).show()
+            } else {
+                Log.d("MQ!", "handleDeepLink keyRoom:$keyRoomsUser, roomsInfos:${viewModel.roomInfos.size}")
+                // Update Rooms user
+                FirebaseDatabase.getInstance().reference.child("rooms").child(keyRoomsUser)
+                    .child("users")
+                    .apply {
+                        addListenerForSingleValueEvent(roomsUserListener)
+                    }
+            }
+        }
+        override fun onCancelled(p0: DatabaseError) {
+        }
+    }
     private var roomsUserInfo = ArrayList<SimpleUser>()
     private var roomsUserListener = object : ValueEventListener {
         override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -537,7 +568,7 @@ class MainActivityV2 : AppCompatActivity() {
             }
             val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
             val keyMe = pref.getString(PrefConstants.KEY_ME, "")
-            roomsUserInfo.add(SimpleUser(key = keyMe, nuga = 0, permission = 0))
+            roomsUserInfo.add(SimpleUser(key=keyMe, nuga = 0, permission = 0))
             FirebaseDatabase.getInstance().reference.child("rooms").child(keyRoomsUser!!)
                 .child("users").setValue(roomsUserInfo)
             FirebaseDatabase.getInstance().reference.child("users").child(keyMe)

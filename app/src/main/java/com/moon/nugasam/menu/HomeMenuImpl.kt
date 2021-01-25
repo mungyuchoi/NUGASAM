@@ -198,9 +198,9 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
     private fun getUriLink() : Uri {
         val pref = activity.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
         val keyRoom = pref.getString(PrefConstants.KEY_ROOM, "")
-        return Uri.parse("https://www.nugasam.com/$SEGMENT_INVITE?key=$keyRoom")
+        val hourTimeLimit = System.currentTimeMillis() + 3600000
+        return Uri.parse("https://www.nugasam.com/$SEGMENT_INVITE?key=$keyRoom&time=$hourTimeLimit")
     }
-
 
     private fun inviteClick() {
         Firebase.dynamicLinks.shortLinkAsync {
