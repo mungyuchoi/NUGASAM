@@ -123,7 +123,6 @@ class MeerkatAdapter internal constructor(val activity: MainActivityV2) : ListAd
     init {
         val pref = activity.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
         myName = pref.getString("name", "")
-        myName ="Rahul"
     }
     companion object {
         val COMPARATOR = object : DiffUtil.ItemCallback<User>() {

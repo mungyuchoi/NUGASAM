@@ -508,6 +508,7 @@ class MainActivityV2 : AppCompatActivity() {
                         val time = deepLink.getQueryParameter("time")
                         if (System.currentTimeMillis() > time.toLong()){
                             Toast.makeText(applicationContext, "Sorry!! time limit!", Toast.LENGTH_SHORT).show()
+                            return@addOnSuccessListener
                         }
 
                         val keyRoom = deepLink.getQueryParameter("key")

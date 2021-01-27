@@ -1,5 +1,6 @@
 package com.moon.nugasam
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -11,6 +12,8 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.moon.nugasam.constant.PrefConstants
+import com.moon.nugasam.data.SimpleUser
 import com.moon.nugasam.data.User
 import java.util.*
 
@@ -21,7 +24,10 @@ class SecondActivity : AppCompatActivity(), View.OnClickListener {
     var textName: TextView? = null
     var textNuga: TextView? = null
     var arrayAdapter: ArrayAdapter<String>? = null
-    private var datas = ArrayList<User>()
+    private var simpleUserInfo = ArrayList<SimpleUser>()
+
+    val userKeys = ArrayList<String>()
+    val userInfo = ArrayList<User>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,28 +75,52 @@ class SecondActivity : AppCompatActivity(), View.OnClickListener {
             val postListener: ValueEventListener = object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     Log.d("getFirebaseDatabase", "key: " + dataSnapshot.childrenCount)
+                    simpleUserInfo.clear()
+                    for (postSnapshot in dataSnapshot.children) {
+                        simpleUserInfo.add(
+                            postSnapshot.getValue(
+                                SimpleUser::class.java
+                            )!!
+                        )
+                    }
                     arrayData.clear()
                     arrayIndex.clear()
-                    datas.clear()
-                    for (postSnapshot in dataSnapshot.children) {
-                        val key = postSnapshot.key
-                        val user =
-                            postSnapshot.getValue(
-                                User::class.java
-                            )
-                        datas.add(user!!)
-                        val info =
-                            arrayOf(user!!.name, user.nuga.toString())
-                        val Result =
-                            setTextLength(info[0]!!, 10) + setTextLength(info[1]!!, 10)
-                        arrayData.add(Result)
-                        arrayIndex.add(key!!)
-                        Log.d("getFirebaseDatabase", "key: $key")
-                        Log.d("getFirebaseDatabase", "info: " + info[0] + info[1])
+                    userInfo.clear()
+                    userKeys.clear()
+                    var index = 0
+                    for(simpleUser in simpleUserInfo){
+                        val ref = FirebaseDatabase.getInstance().reference.child("users")
+                            .child(simpleUser.key)
+                        ref.addListenerForSingleValueEvent(object: ValueEventListener {
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                (snapshot.getValue(User::class.java) as User).run {
+                                    if (userKeys.contains(snapshot.key) || arrayIndex.contains(snapshot.key)) {
+                                        return
+                                    }
+                                    this.nuga = simpleUser.nuga
+                                    userInfo.add(this)
+                                    userKeys.add(snapshot.key!!)
+                                    val info = arrayOf(this.name, this.nuga.toString())
+                                    val result = setTextLength(info[0]!!, 10) + setTextLength(info[1]!!, 10)
+                                    arrayData.add(result)
+                                    arrayIndex.add(snapshot.key!!)
+                                    index++
+                                    if (simpleUserInfo.size == index) {
+                                        sortUsers()
+                                        arrayAdapter?.run {
+                                            clear()
+                                            addAll(arrayData)
+                                            notifyDataSetChanged()
+                                        }
+                                    }
+
+                                }
+                            }
+                            override fun onCancelled(error: DatabaseError) {
+                                TODO("Not yet implemented")
+                            }
+                        })
                     }
-                    arrayAdapter!!.clear()
-                    arrayAdapter!!.addAll(arrayData)
-                    arrayAdapter!!.notifyDataSetChanged()
                 }
 
                 override fun onCancelled(databaseError: DatabaseError) {
@@ -101,9 +131,35 @@ class SecondActivity : AppCompatActivity(), View.OnClickListener {
                     )
                 }
             }
-            FirebaseDatabase.getInstance().reference.child("users").orderByChild("name")
+            val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+            val keyRoom = pref.getString(PrefConstants.KEY_ROOM, "")
+            FirebaseDatabase.getInstance().reference.child("rooms").child(keyRoom).child("users")
                 .addValueEventListener(postListener)
         }
+
+    private fun sortUsers(){
+        (0 until userInfo.size - 1).forEach { i ->
+            (0 until userInfo.size - 1).forEach { j ->
+                val firstValue = userInfo[j]
+                val secondValue = userInfo[j + 1]
+
+                val firstValueKey = userKeys[j]
+                val secondValueKey = userKeys[j + 1]
+
+                if (firstValue.nuga > secondValue.nuga) {
+                    userInfo.add(j, secondValue)
+                    userInfo.removeAt(j + 1)
+                    userInfo.add(j + 1, firstValue)
+                    userInfo.removeAt(j + 2)
+
+                    userKeys.add(j, secondValueKey)
+                    userKeys.removeAt(j + 1)
+                    userKeys.add(j + 1, firstValueKey)
+                    userKeys.removeAt(j + 2)
+                }
+            }
+        }
+    }
 
     fun setTextLength(text: String, length: Int): String {
         var text = text
@@ -122,12 +178,18 @@ class SecondActivity : AppCompatActivity(), View.OnClickListener {
                 val name = editName!!.text.toString()
                 val nuga = editNuga!!.text.toString().toInt()
 
-                getUser(name)?.let{
-                    var ref = FirebaseDatabase.getInstance().reference
-                    var key = getKey(it)
-                    ref.child("users").child(key).child("nuga").setValue(nuga)
+                val key = getKey(getUser(name)!!)
+                for(u in simpleUserInfo) {
+                    if(u.key == key){
+                        u.nuga = nuga
+                        break
+                    }
                 }
 
+                val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+                val keyRoom = pref.getString(PrefConstants.KEY_ROOM, "")
+                FirebaseDatabase.getInstance().reference.child("rooms").child(keyRoom)
+                    .child("users").setValue(simpleUserInfo)
                 Toast.makeText(this, "변경 되었습니다.", Toast.LENGTH_SHORT).show()
                 setInsertMode()
             }
@@ -135,21 +197,19 @@ class SecondActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun getUser(name: String): User? {
-        for (u in datas) {
+        for ((index, u) in userInfo.withIndex()) {
             if (u.name == name) {
-                return u
+                return userInfo[index]
             }
         }
         return null
     }
 
-    private fun getKey(user: User): String {
-        var index = 0
-        for (u in datas) {
+    fun getKey(user: User): String {
+        for ((index, u) in userInfo.withIndex()) {
             if (u.name == user.name) {
-                return arrayIndex[index]
+                return userKeys[index]
             }
-            index++
         }
         return ""
     }

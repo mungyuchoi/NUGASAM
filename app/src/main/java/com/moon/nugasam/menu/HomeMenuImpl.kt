@@ -10,6 +10,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.core.content.ContextCompat.startActivity
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.dynamiclinks.DynamicLink
 import com.google.firebase.dynamiclinks.FirebaseDynamicLinks
@@ -19,6 +20,7 @@ import com.kongzue.dialog.v2.SelectDialog
 import com.moon.nugasam.MainActivityV2
 import com.moon.nugasam.MainActivityV2.Companion.SEGMENT_INVITE
 import com.moon.nugasam.R
+import com.moon.nugasam.SecondActivity
 import com.moon.nugasam.SettingsActivity
 import com.moon.nugasam.constant.PrefConstants
 import com.moon.nugasam.data.SimpleUser
@@ -116,6 +118,7 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
             }
             R.id.action_manager -> {
                 Log.d(TAG, "action_manager")
+                startActivity(activity, Intent(activity, SecondActivity::class.java), null)
                 return true
             }
             R.id.action_setting -> {
