@@ -139,18 +139,18 @@ public class UndoAdapter extends RecyclerView.Adapter<UndoAdapter.ViewHolder> {
                             int whosCount = history.getWho().size();
 
 
-                            Map childUpdates = new HashMap<String, Object>();
-                            User me = ((UndoActivity) mActivity).getUser(history.getMe().getFullName());
-                            me.setNuga(me.getNuga() - whosCount);
-                            Log.d(TAG, "me : " + history.getMe().getFullName() + ", whoCount: " + whosCount + ", me key: " + ((UndoActivity) mActivity).getKey(history.getMe()));
-                            childUpdates.put("/users/" + ((UndoActivity) mActivity).getKey(history.getMe()), me);
-                            for (int i = 0; i < whosCount; i++) {
-                                User user = ((UndoActivity) mActivity).getUser(history.getWho().get(i).getFullName());
-                                user.setNuga(user.getNuga() + 1);
-                                Log.d(TAG, "who: " + user.getFullName() + ", key : " + ((UndoActivity) mActivity).getKey(user));
-                                childUpdates.put("/users/" + ((UndoActivity) mActivity).getKey(user), user);
-                            }
-                            ref.updateChildren(childUpdates);
+//                            Map childUpdates = new HashMap<String, Object>();
+//                            User me = ((UndoActivity) mActivity).getUser(history.getMe().getFullName());
+//                            me.setNuga(me.getNuga() - whosCount);
+//                            Log.d(TAG, "me : " + history.getMe().getFullName() + ", whoCount: " + whosCount + ", me key: " + ((UndoActivity) mActivity).getKey(history.getMe()));
+//                            childUpdates.put("/users/" + ((UndoActivity) mActivity).getKey(history.getMe()), me);
+//                            for (int i = 0; i < whosCount; i++) {
+//                                User user = ((UndoActivity) mActivity).getUser(history.getWho().get(i).getFullName());
+//                                user.setNuga(user.getNuga() + 1);
+//                                Log.d(TAG, "who: " + user.getFullName() + ", key : " + ((UndoActivity) mActivity).getKey(user));
+//                                childUpdates.put("/users/" + ((UndoActivity) mActivity).getKey(user), user);
+//                            }
+//                            ref.updateChildren(childUpdates);
 
                             // who에서는 full name의 user로부터 가져와서 nuga값 += 1을한다.
                             // who의 개수만큼

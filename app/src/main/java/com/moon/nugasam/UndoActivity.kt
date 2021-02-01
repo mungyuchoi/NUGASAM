@@ -1,5 +1,6 @@
 package com.moon.nugasam
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -12,8 +13,8 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.moon.nugasam.constant.PrefConstants
 import com.moon.nugasam.data.History
-import com.moon.nugasam.data.User
 import kotlinx.android.synthetic.main.activity_undo.*
 import java.util.ArrayList
 
@@ -25,9 +26,6 @@ class UndoActivity : AppCompatActivity() {
 
     private var dataIndex = ArrayList<String>()
     private var datas = ArrayList<History>()
-
-    private var userDataIndex = ArrayList<String>()
-    private var userDatas = ArrayList<User>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,37 +45,18 @@ class UndoActivity : AppCompatActivity() {
         progress = findViewById(R.id.refresh)
     }
 
-    fun loadFirebaseData() {
-        var query =
-            FirebaseDatabase.getInstance().getReference().child("history").orderByChild("date").limitToLast(10).apply {
-                var postListener = object : ValueEventListener {
-                    override fun onDataChange(dataSnapshot: DataSnapshot) {
-                        updateUI(dataSnapshot)
-                        progress?.visibility = View.INVISIBLE
-                    }
-
-                    override fun onCancelled(p0: DatabaseError) {
-                    }
+    private fun loadFirebaseData() {
+        val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+        val keyRoom = pref.getString(PrefConstants.KEY_ROOM, "")
+        FirebaseDatabase.getInstance().reference.child("history").child(keyRoom).orderByChild("date").limitToLast(10).apply {
+            addValueEventListener(object: ValueEventListener {
+                override fun onCancelled(error: DatabaseError) {
                 }
-                addValueEventListener(postListener)
-            }
-        FirebaseDatabase.getInstance().getReference().child("users").apply {
-            var postListener = object : ValueEventListener {
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    userDatas.clear()
-                    userDataIndex.clear()
-                    for (postSnapshot in dataSnapshot.children) {
-                        val key = postSnapshot.key
-                        val user = postSnapshot.getValue(User::class.java)
-                        userDatas.add(user!!)
-                        userDataIndex.add(key!!)
-                    }
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    updateUI(snapshot)
+                    progress?.visibility = View.INVISIBLE
                 }
-
-                override fun onCancelled(p0: DatabaseError) {
-                }
-            }
-            addValueEventListener(postListener)
+            })
         }
     }
 
@@ -103,27 +82,6 @@ class UndoActivity : AppCompatActivity() {
             dataIndex.add(key!!)
         }
         undoAdapter?.addAllData(datas)
-    }
-
-    fun getKey(user: User): String {
-        var index = 0
-        for (u in userDatas) {
-            if (u.fullName.equals(user.fullName)) {
-                return userDataIndex.get(index)
-            }
-            index++
-        }
-        return ""
-    }
-
-    fun getUser(fullName: String): User? {
-        var index = 0
-        for (u in userDatas) {
-            if (u.fullName.equals(fullName)) {
-                return u
-            }
-        }
-        return null
     }
 
     companion object {

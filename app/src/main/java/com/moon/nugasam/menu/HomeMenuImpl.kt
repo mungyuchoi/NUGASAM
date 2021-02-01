@@ -17,13 +17,13 @@ import com.google.firebase.dynamiclinks.FirebaseDynamicLinks
 import com.google.firebase.dynamiclinks.ktx.*
 import com.google.firebase.ktx.Firebase
 import com.kongzue.dialog.v2.SelectDialog
-import com.moon.nugasam.MainActivityV2
+import com.moon.nugasam.*
 import com.moon.nugasam.MainActivityV2.Companion.SEGMENT_INVITE
 import com.moon.nugasam.R
-import com.moon.nugasam.SecondActivity
-import com.moon.nugasam.SettingsActivity
 import com.moon.nugasam.constant.PrefConstants
+import com.moon.nugasam.data.History
 import com.moon.nugasam.data.SimpleUser
+import com.moon.nugasam.data.User
 
 class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
 
@@ -53,10 +53,16 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
                 activity.meerkatAdapter.notifyDataSetChanged()
                 return true
             }
-//            R.id.action_undo -> {
-//                Log.d(TAG, "action_undo")
-//                return true
-//            }
+            R.id.action_undo -> {
+                Log.d(TAG, "action_undo")
+                activity.startActivity(
+                    Intent(
+                        activity,
+                        UndoActivity::class.java
+                    )
+                )
+                return true
+            }
             R.id.action_invite -> {
                 Log.d("MQ!", "action_invite")
                 inviteClick()
@@ -147,9 +153,12 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
                             break
                         }
                     }
-
-
+                    var history = History()
+                    history.me = activity.me
+                    history.date = System.currentTimeMillis().toString()
+                    var who = ArrayList<User>()
                     for (user in activity.selectionList) {
+                        who.add(user)
                         var key = activity.getKey(user)
                         for (simpleUser in simpleUsers) {
                             if (simpleUser.key == key) {
@@ -159,6 +168,12 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
                             }
                         }
                     }
+
+                    history.who = who
+                    FirebaseDatabase.getInstance().reference.child("history").child(keyRoom).push().run {
+                        setValue(history)
+                    }
+
                     FirebaseDatabase.getInstance().reference.child("rooms").child(keyRoom)
                         .child("users").run {
                             setValue(simpleUsers)

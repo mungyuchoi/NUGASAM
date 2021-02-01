@@ -12,9 +12,9 @@
           android:icon="@drawable/ic_refresh"
           app:showAsAction="always"/>
 
-<!--    <item android:id="@+id/action_undo"-->
-<!--        android:title="@string/action_undo"-->
-<!--        app:showAsAction="never"/>-->
+    <item android:id="@+id/action_undo"
+        android:title="@string/action_undo"
+        app:showAsAction="never"/>
 
     <item android:id="@+id/action_invite"
             android:title="@string/action_invite"
