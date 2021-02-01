@@ -515,7 +515,7 @@ class MainActivityV2 : AppCompatActivity() {
 
                         //TODO  Check rooms.child("keyRoom").users included keyMe handle
                         keyRoomsUser = keyRoom
-                        FirebaseDatabase.getInstance().reference.child("rroms").child(keyRoom)
+                        FirebaseDatabase.getInstance().reference.child("rooms").child(keyRoom)
                             .child("users")
                             .apply {
                                 addListenerForSingleValueEvent(validUserListener)
@@ -533,20 +533,19 @@ class MainActivityV2 : AppCompatActivity() {
             roomsUserInfo.clear()
             for (childDataSnapshot in dataSnapshot.children) {
                 roomsUserInfo.add(childDataSnapshot.getValue(SimpleUser::class.java)!!.apply {
-                    Log.i(TAG, "roomsUserListener add $nuga")
+                    Log.i(TAG, "roomsUserListener add $roomsUserInfo")
                 })
             }
             val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
             val keyMe = pref.getString(PrefConstants.KEY_ME, "")
-
             val duplicate = roomsUserInfo.filter {
                 it.key.contains(keyMe)
             }
 
             if (duplicate.isNotEmpty()) {
-                Toast.makeText(applicationContext, "Sorry!!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(applicationContext, "Sorry!! Duplcated name", Toast.LENGTH_SHORT).show()
             } else {
-                Log.d("MQ!", "handleDeepLink keyRoom:$keyRoomsUser, roomsInfos:${viewModel.roomInfos.size}")
+                Log.d(TAG, "handleDeepLink keyRoom:$keyRoomsUser, roomsInfos:${roomsUserInfo}")
                 // Update Rooms user
                 FirebaseDatabase.getInstance().reference.child("rooms").child(keyRoomsUser)
                     .child("users")
