@@ -179,10 +179,7 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
                         .child("users").run {
                             setValue(simpleUsers)
                         }
-                    activity.viewModel.loadUserRoomData()
-                    activity.clearActionMode()
-                    activity.meerkatAdapter.notifyDataSetChanged()
-                    dialog.dismiss()
+
 
                     var point = activity.me?.point ?: 0
                     Log.i("MQ!", "selectionListSize:${activity.selectionList.size}, point:$point")
@@ -201,6 +198,11 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
                             activity.shareDialog()
                         }
                     }
+
+                    activity.viewModel.loadUserRoomData()
+                    activity.clearActionMode()
+                    activity.meerkatAdapter.notifyDataSetChanged()
+                    dialog.dismiss()
                 }, "취소", { dialog, _ ->
                     dialog.dismiss()
                     activity.clearActionMode()

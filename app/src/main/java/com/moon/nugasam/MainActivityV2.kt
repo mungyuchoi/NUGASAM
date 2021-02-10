@@ -241,7 +241,7 @@ class MainActivityV2 : AppCompatActivity() {
                 }
             })
             _userMe.observe(this@MainActivityV2, Observer { user->
-                Log.d("MQ!", "observe user:$user")
+                Log.d(TAG, "observe user:$user")
                 me = user
                 Glide.with(this@MainActivityV2).load(me!!.imageUrl).apply(RequestOptions.circleCropTransform())
                     .into(navigationThumbnail!!)
@@ -518,7 +518,7 @@ class MainActivityV2 : AppCompatActivity() {
                     deepLink = pendingDynamicLinkData.link
                     if (deepLink?.lastPathSegment == SEGMENT_INVITE) {
                         val time = deepLink.getQueryParameter("time")
-                        Log.i("MQ!", "time: $time, currentTime:${System.currentTimeMillis()}")
+                        Log.i(TAG, "time: $time, currentTime:${System.currentTimeMillis()}")
                         if (System.currentTimeMillis() > time.toLong()) {
                             Toast.makeText(
                                 applicationContext,
@@ -632,7 +632,6 @@ class MeerkatViewModel(private val application: Application, activity: AppCompat
     fun loadUserInfo() {
         val pref = application.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
         val keyMe = pref.getString(PrefConstants.KEY_ME, "")
-        Log.i("MQ!", "loadUserInfo key:$keyMe")
         if (keyMe == "" || keyMe.isEmpty()) {
             return
         }
@@ -641,7 +640,6 @@ class MeerkatViewModel(private val application: Application, activity: AppCompat
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val key = snapshot.key
                     if (key == keyMe) {
-                        Log.i("MQ!", "loadUserInfo2 key:$keyMe")
 
                         val user = snapshot.getValue(User::class.java)
                         _userMe.postValue(user)
