@@ -170,9 +170,10 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
                     }
 
                     history.who = who
-                    FirebaseDatabase.getInstance().reference.child("history").child(keyRoom).push().run {
-                        setValue(history)
-                    }
+                    FirebaseDatabase.getInstance().reference.child("history").child(keyRoom).push()
+                        .run {
+                            setValue(history)
+                        }
 
                     FirebaseDatabase.getInstance().reference.child("rooms").child(keyRoom)
                         .child("users").run {
@@ -184,6 +185,7 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
                     dialog.dismiss()
 
                     var point = activity.me?.point ?: 0
+                    Log.i("MQ!", "selectionListSize:${activity.selectionList.size}, point:$point")
                     if (activity.selectionList.size < point) {
                         point -= activity.selectionList.size
                         FirebaseDatabase.getInstance().reference.child("users").child(keyMe)
@@ -213,7 +215,7 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
         return false
     }
 
-    private fun getUriLink() : Uri {
+    private fun getUriLink(): Uri {
         val pref = activity.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
         val keyRoom = pref.getString(PrefConstants.KEY_ROOM, "")
         val hourTimeLimit = System.currentTimeMillis() + 3600000
@@ -233,15 +235,15 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
                 campaign = "example-promo"
             }
         }.addOnSuccessListener { (shortLink, flowchartLink) ->
-            Log.i("MQ!", "addOnSuccessListener shortLink: $shortLink flowchartLink: $flowchartLink" )
+            Log.i("MQ!", "addOnSuccessListener shortLink: $shortLink flowchartLink: $flowchartLink")
             val intent = Intent().apply {
                 action = ACTION_SEND
                 putExtra(EXTRA_TEXT, shortLink.toString())
-                type ="text/plain"
+                type = "text/plain"
             }
             activity.startActivity(Intent.createChooser(intent, "Share"))
         }.addOnFailureListener {
-            Log.i("MQ!", "addOnFailureListener" )
+            Log.i("MQ!", "addOnFailureListener")
         }
     }
 

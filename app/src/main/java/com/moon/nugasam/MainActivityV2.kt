@@ -136,6 +136,7 @@ class MainActivityV2 : AppCompatActivity() {
         )
         viewModel.run {
             loadUserRoomData()
+            loadUserInfo()
             loading.observe(this@MainActivityV2, Observer { isLoading ->
                 Log.i(TAG, "loading isLoading:$isLoading")
                 progress?.visibility =
@@ -238,6 +239,14 @@ class MainActivityV2 : AppCompatActivity() {
                 } else {
                     emptyView.visibility = View.GONE
                 }
+            })
+            _userMe.observe(this@MainActivityV2, Observer { user->
+                Log.d("MQ!", "observe user:$user")
+                me = user
+                Glide.with(this@MainActivityV2).load(me!!.imageUrl).apply(RequestOptions.circleCropTransform())
+                    .into(navigationThumbnail!!)
+                navigationMeerKat?.text = me?.name
+                navigationPoint?.text = "Point: " + me?.point
             })
         }
 
@@ -467,11 +476,14 @@ class MainActivityV2 : AppCompatActivity() {
                                         .push()
                                 editor.putString("key", usersRef.key)
                                 editor.commit()
-
-                                Log.d(TAG, "name: $inputText")
+                                var name = inputText
+                                if (name == null || name.isEmpty()) {
+                                    name = viewModel.auth?.currentUser?.displayName
+                                }
+                                Log.d(TAG, "name: $name")
                                 usersRef.setValue(
                                     User(
-                                        name = inputText,
+                                        name = name,
                                         point = 0,
                                         nuga = 0,
                                         imageUrl = viewModel.auth?.currentUser?.photoUrl.toString(),
@@ -500,14 +512,19 @@ class MainActivityV2 : AppCompatActivity() {
 
     private fun handleDeepLink() {
         Firebase.dynamicLinks.getDynamicLink(intent)
-            .addOnSuccessListener(this){ pendingDynamicLinkData ->
+            .addOnSuccessListener(this) { pendingDynamicLinkData ->
                 var deepLink: Uri? = null
                 if (pendingDynamicLinkData != null) {
                     deepLink = pendingDynamicLinkData.link
-                    if(deepLink?.lastPathSegment == SEGMENT_INVITE){
+                    if (deepLink?.lastPathSegment == SEGMENT_INVITE) {
                         val time = deepLink.getQueryParameter("time")
-                        if (System.currentTimeMillis() > time.toLong()){
-                            Toast.makeText(applicationContext, "Sorry!! time limit!", Toast.LENGTH_SHORT).show()
+                        Log.i("MQ!", "time: $time, currentTime:${System.currentTimeMillis()}")
+                        if (System.currentTimeMillis() > time.toLong()) {
+                            Toast.makeText(
+                                applicationContext,
+                                "Sorry!! time limit!",
+                                Toast.LENGTH_SHORT
+                            ).show()
                             return@addOnSuccessListener
                         }
 
@@ -523,12 +540,13 @@ class MainActivityV2 : AppCompatActivity() {
                     }
                 }
             }
-            .addOnFailureListener(this) {
-                    e-> Log.w(TAG, "onFailure", e)
+            .addOnFailureListener(this) { e ->
+                Log.w(TAG, "onFailure", e)
             }
     }
+
     private var keyRoomsUser: String = ""
-    private var validUserListener = object: ValueEventListener {
+    private var validUserListener = object : ValueEventListener {
         override fun onDataChange(dataSnapshot: DataSnapshot) {
             roomsUserInfo.clear()
             for (childDataSnapshot in dataSnapshot.children) {
@@ -543,7 +561,8 @@ class MainActivityV2 : AppCompatActivity() {
             }
 
             if (duplicate.isNotEmpty()) {
-                Toast.makeText(applicationContext, "Sorry!! Duplcated name", Toast.LENGTH_SHORT).show()
+                Toast.makeText(applicationContext, "Sorry!! Duplcated name", Toast.LENGTH_SHORT)
+                    .show()
             } else {
                 Log.d(TAG, "handleDeepLink keyRoom:$keyRoomsUser, roomsInfos:${roomsUserInfo}")
                 // Update Rooms user
@@ -554,6 +573,7 @@ class MainActivityV2 : AppCompatActivity() {
                     }
             }
         }
+
         override fun onCancelled(p0: DatabaseError) {
         }
     }
@@ -568,7 +588,7 @@ class MainActivityV2 : AppCompatActivity() {
             }
             val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
             val keyMe = pref.getString(PrefConstants.KEY_ME, "")
-            roomsUserInfo.add(SimpleUser(key=keyMe, nuga = 0, permission = 0))
+            roomsUserInfo.add(SimpleUser(key = keyMe, nuga = 0, permission = 0))
             FirebaseDatabase.getInstance().reference.child("rooms").child(keyRoomsUser!!)
                 .child("users").setValue(roomsUserInfo)
             FirebaseDatabase.getInstance().reference.child("users").child(keyMe)
@@ -606,6 +626,33 @@ class MeerkatViewModel(private val application: Application, activity: AppCompat
     val loading: LiveData<Boolean> = _data.map { it.status == LOADING }
     val empty: LiveData<Boolean> = _data.filter { it.status == SUCCESS }.map {
         it.data?.isEmpty() ?: true
+    }
+    var _userMe = MutableLiveData<User>()
+
+    fun loadUserInfo() {
+        val pref = application.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+        val keyMe = pref.getString(PrefConstants.KEY_ME, "")
+        Log.i("MQ!", "loadUserInfo key:$keyMe")
+        if (keyMe == "" || keyMe.isEmpty()) {
+            return
+        }
+        FirebaseDatabase.getInstance().reference.child("users").child(keyMe).run {
+            addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val key = snapshot.key
+                    if (key == keyMe) {
+                        Log.i("MQ!", "loadUserInfo2 key:$keyMe")
+
+                        val user = snapshot.getValue(User::class.java)
+                        _userMe.postValue(user)
+                        return
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                }
+            })
+        }
     }
 
     fun loadUserRoomData() {
