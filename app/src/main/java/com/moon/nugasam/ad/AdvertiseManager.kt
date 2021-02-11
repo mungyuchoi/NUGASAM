@@ -42,9 +42,9 @@ class AdvertiseManager(private val activity: MainActivityV2) {
         activity.run {
             adView = findViewById(R.id.adView)
             adView.visibility = View.VISIBLE
-            val adRequest =
-                AdRequest.Builder().addTestDevice("ABEBCC8921F3ABA283C084A2954D0CAE").build()
-//            val adRequest = AdRequest.Builder().build()
+//            val adRequest =
+//                AdRequest.Builder().addTestDevice("ABEBCC8921F3ABA283C084A2954D0CAE").build()
+            val adRequest = AdRequest.Builder().build()
             adView.loadAd(adRequest)
             adView.adListener = (object : AdListener() {
 
