@@ -162,20 +162,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 drawer!!.closeDrawer(GravityCompat.START)
                 return true
             }
-            R.id.nav_reorder -> {
-                if (reorder.equals("name")) {
-                    reorder = "nuga"
-                } else {
-                    reorder = "name"
-                }
-                val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
-                var editor = pref.edit()
-                editor.putString("reorder", reorder)
-                editor.commit()
-                loadFirebaseData()
-                drawer!!.closeDrawer(GravityCompat.START)
-                return true
-            }
+//            R.id.nav_reorder -> {
+//                if (reorder.equals("name")) {
+//                    reorder = "nuga"
+//                } else {
+//                    reorder = "name"
+//                }
+//                val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+//                var editor = pref.edit()
+//                editor.putString("reorder", reorder)
+//                editor.commit()
+//                loadFirebaseData()
+//                drawer!!.closeDrawer(GravityCompat.START)
+//                return true
+//            }
             R.integer.nav_tbd -> {
                 Toast.makeText(applicationContext, "업데이트 예정입니다.", Toast.LENGTH_SHORT).show()
             }

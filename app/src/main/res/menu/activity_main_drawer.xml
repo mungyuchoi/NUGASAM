@@ -8,10 +8,6 @@
                     android:id="@+id/nav_share"
                     android:icon="@drawable/ic_menu_share"
                     android:title="@string/action_share" />
-            <item
-                    android:id="@+id/nav_reorder"
-                    android:icon="@drawable/ic_menu_reorder"
-                    android:title="@string/action_reorder" />
         </menu>
     </item>
 </menu>
