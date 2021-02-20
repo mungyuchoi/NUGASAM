@@ -192,6 +192,7 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
                             }
                         activity.shareDialog()
                     } else {
+                        Log.i("MQ!", "point is out loaded:${activity.shareAdView.isLoaded}")
                         if (activity.shareAdView.isLoaded) {
                             activity.shareAdView.show()
                         } else {

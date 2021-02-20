@@ -3,9 +3,11 @@ package com.moon.nugasam
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
+import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NavUtils
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieAnimationView
@@ -16,7 +18,8 @@ import com.google.firebase.database.ValueEventListener
 import com.moon.nugasam.constant.PrefConstants
 import com.moon.nugasam.data.History
 import kotlinx.android.synthetic.main.activity_undo.*
-import java.util.ArrayList
+import java.util.*
+
 
 class UndoActivity : AppCompatActivity() {
 
@@ -30,6 +33,11 @@ class UndoActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_undo)
+
+        supportActionBar?.run {
+            title = "히스토리"
+            setDisplayHomeAsUpEnabled(true)
+        }
 
         recyclerView = findViewById<RecyclerView>(R.id.recyclerView)?.apply {
             setHasFixedSize(true)
@@ -48,15 +56,28 @@ class UndoActivity : AppCompatActivity() {
     private fun loadFirebaseData() {
         val pref = getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
         val keyRoom = pref.getString(PrefConstants.KEY_ROOM, "")
-        FirebaseDatabase.getInstance().reference.child("history").child(keyRoom).orderByChild("date").limitToLast(10).apply {
-            addValueEventListener(object: ValueEventListener {
+        FirebaseDatabase.getInstance().reference.child("history").child(keyRoom).orderByChild("date").limitToLast(
+            10
+        ).apply {
+            addValueEventListener(object : ValueEventListener {
                 override fun onCancelled(error: DatabaseError) {
                 }
+
                 override fun onDataChange(snapshot: DataSnapshot) {
                     updateUI(snapshot)
                     progress?.visibility = View.INVISIBLE
                 }
             })
+        }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        return when (item!!.itemId) {
+            android.R.id.home -> {
+                finish()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
