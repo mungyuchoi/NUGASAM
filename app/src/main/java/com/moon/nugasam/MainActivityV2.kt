@@ -240,13 +240,25 @@ class MainActivityV2 : AppCompatActivity() {
                     emptyView.visibility = View.GONE
                 }
             })
-            _userMe.observe(this@MainActivityV2, Observer { user->
-                Log.d(TAG, "observe user:$user")
+            _userMe.observe(this@MainActivityV2, Observer { user ->
+                Log.d("MQ!", "observe user:$user")
                 me = user
-                Glide.with(this@MainActivityV2).load(me!!.imageUrl).apply(RequestOptions.circleCropTransform())
+                Glide.with(this@MainActivityV2).load(me!!.imageUrl)
+                    .apply(RequestOptions.circleCropTransform())
                     .into(navigationThumbnail!!)
                 navigationMeerKat?.text = me?.name
                 navigationPoint?.text = "Point: " + me?.point
+
+                if (me != null) {
+                    for (user in userInfo) {
+                        if (user.name == me!!.name) {
+                            user.point = me!!.point
+                            break
+                        }
+                    }
+                    meerkatAdapter.submitList(userInfo)
+                    meerkatAdapter.notifyDataSetChanged()
+                }
             })
         }
 
@@ -628,6 +640,27 @@ class MeerkatViewModel(private val application: Application, activity: AppCompat
         it.data?.isEmpty() ?: true
     }
     var _userMe = MutableLiveData<User>()
+    var userMeQuery: Query? = null
+
+    val loadUserListener = object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            val key = snapshot.key
+            Log.i("MQ!", "onDataChange user key:$key")
+            val pref = application.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+            val keyMe = pref.getString(PrefConstants.KEY_ME, "")
+            if (keyMe == "" || keyMe.isEmpty()) {
+                return
+            }
+            if (key == keyMe) {
+                val user = snapshot.getValue(User::class.java)
+                _userMe.postValue(user)
+                return
+            }
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+        }
+    }
 
     fun loadUserInfo() {
         val pref = application.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
@@ -635,22 +668,19 @@ class MeerkatViewModel(private val application: Application, activity: AppCompat
         if (keyMe == "" || keyMe.isEmpty()) {
             return
         }
-        FirebaseDatabase.getInstance().reference.child("users").child(keyMe).run {
-            addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val key = snapshot.key
-                    if (key == keyMe) {
-
-                        val user = snapshot.getValue(User::class.java)
-                        _userMe.postValue(user)
-                        return
-                    }
+        if (userMeQuery == null) {
+            userMeQuery =
+                FirebaseDatabase.getInstance().reference.child("users").child(keyMe).apply {
+                    addValueEventListener(loadUserListener)
                 }
-
-                override fun onCancelled(error: DatabaseError) {
+        } else {
+            userMeQuery?.removeEventListener(loadUserListener)
+            userMeQuery =
+                FirebaseDatabase.getInstance().reference.child("users").child(keyMe).apply {
+                    addValueEventListener(loadUserListener)
                 }
-            })
         }
+
     }
 
     fun loadUserRoomData() {

@@ -64,7 +64,7 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
                 return true
             }
             R.id.action_invite -> {
-                Log.d("MQ!", "action_invite")
+                Log.d(TAG, "action_invite")
                 inviteClick()
             }
             R.id.action_exit -> {
@@ -182,7 +182,7 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
 
 
                     var point = activity.me?.point ?: 0
-                    Log.i("MQ!", "selectionListSize:${activity.selectionList.size}, point:$point")
+                    Log.i(TAG, "selectionListSize:${activity.selectionList.size}, point:$point")
                     if (activity.selectionList.size < point) {
                         point -= activity.selectionList.size
                         FirebaseDatabase.getInstance().reference.child("users").child(keyMe)
@@ -192,7 +192,7 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
                             }
                         activity.shareDialog()
                     } else {
-                        Log.i("MQ!", "point is out loaded:${activity.shareAdView.isLoaded}")
+                        Log.i(TAG, "point is out loaded:${activity.shareAdView.isLoaded}")
                         if (activity.shareAdView.isLoaded) {
                             activity.shareAdView.show()
                         } else {
