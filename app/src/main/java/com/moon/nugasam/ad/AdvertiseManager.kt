@@ -2,13 +2,11 @@ package com.moon.nugasam.ad
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.util.Log
 import android.view.View
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import androidx.core.content.ContextCompat.startActivity
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.InterstitialAd
@@ -166,7 +164,7 @@ class AdvertiseManager(private val activity: MainActivityV2) {
     private fun loadRewardedVideoAd() {
         activity.rewardedVideoAd.loadAd(
 //             "ca-app-pub-3940256099942544/5224354917",
-            "ca-app-pub-8549606613390169/8372384890",
+            "ca-app-pub-8549606613390169/3251070406",
 //            AdRequest.Builder().addTestDevice("ABEBCC8921F3ABA283C084A2954D0CAE").build())
             AdRequest.Builder().build()
         )
