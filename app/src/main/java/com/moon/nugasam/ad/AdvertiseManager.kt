@@ -32,7 +32,7 @@ class AdvertiseManager(private val activity: MainActivityV2) {
         } else {
             initCoupang()
         }
-        initRewardsVideo()
+//        initRewardsVideo()
         initShareAd()
     }
 
@@ -59,6 +59,15 @@ class AdvertiseManager(private val activity: MainActivityV2) {
                 override fun onAdClosed() {
                     super.onAdClosed()
                     Log.d(TAG, "onAdClosed 배너 닫힘 ")
+                    val pref = application.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+                    val key = pref.getString("key", "")
+                    Log.d(TAG, "onRewarded me:${activity.me}, key:$key")
+                    activity.me?.let {
+                        var point = if (it.point == null) 0 else it.point
+                        point += 2
+                        FirebaseDatabase.getInstance().reference.child("users").child(key)
+                            .child("point").setValue(point)
+                    }
                 }
             })
         }

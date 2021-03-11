@@ -594,14 +594,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 startActivity(Intent(this, SettingsActivity::class.java))
                 return true
             }
-            R.id.action_meerkat -> {
-                if (mRewardedVideoAd.isLoaded) {
-                    mRewardedVideoAd.show()
-                } else {
-                    Toast.makeText(this, "광고준비가 아직 안되었습니다.", Toast.LENGTH_SHORT).show()
-                }
-                return true
-            }
+//            R.id.action_meerkat -> {
+//                if (mRewardedVideoAd.isLoaded) {
+//                    mRewardedVideoAd.show()
+//                } else {
+//                    Toast.makeText(this, "광고준비가 아직 안되었습니다.", Toast.LENGTH_SHORT).show()
+//                }
+//                return true
+//            }
 
             else -> return super.onOptionsItemSelected(item)
         }
