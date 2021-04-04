@@ -131,14 +131,14 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
                 activity.startActivity(Intent(activity, SettingsActivity::class.java))
                 return true
             }
-//            R.id.action_meerkat -> {
-//                if (activity.rewardedVideoAd.isLoaded) {
-//                    activity.rewardedVideoAd.show()
-//                } else {
-//                    Toast.makeText(activity, "광고준비가 아직 안되었습니다.", Toast.LENGTH_SHORT).show()
-//                }
-//                return true
-//            }
+            R.id.action_meerkat -> {
+                if (activity.meerkatAdView.isLoaded) {
+                    activity.meerkatAdView.show()
+                } else {
+                    Toast.makeText(activity, "광고준비가 아직 안되었습니다.", Toast.LENGTH_SHORT).show()
+                }
+                return true
+            }
             R.id.item_done -> {
                 Log.d(TAG, "done clicked selectionList:${activity.selectionList} me:${activity.me}")
                 SelectDialog.build(activity, "정말 샀나요?", "", "샀음", { dialog, _ ->

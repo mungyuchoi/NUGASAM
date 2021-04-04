@@ -82,6 +82,7 @@ class MainActivityV2 : AppCompatActivity() {
     lateinit var adView: AdView
     lateinit var rewardedVideoAd: RewardedVideoAd
     lateinit var shareAdView: InterstitialAd
+    lateinit var meerkatAdView: InterstitialAd
     private val adManager = AdvertiseManager(this)
 
     lateinit var drawer: AdvanceDrawerLayout

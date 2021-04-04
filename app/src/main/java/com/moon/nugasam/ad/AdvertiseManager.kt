@@ -7,6 +7,7 @@ import android.view.View
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Toast
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.InterstitialAd
@@ -27,11 +28,8 @@ class AdvertiseManager(private val activity: MainActivityV2) {
 
         val pref = activity.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
         val adOrder = pref.getBoolean(PrefConstants.AD_ORDER, false)
-        if (adOrder) {
-            initBottom()
-        } else {
-            initCoupang()
-        }
+        initBottom()
+
 //        initRewardsVideo()
         initShareAd()
     }
@@ -40,7 +38,7 @@ class AdvertiseManager(private val activity: MainActivityV2) {
         activity.run {
             adView = findViewById(R.id.adView)
             adView.visibility = View.VISIBLE
-//            val adRequest =
+//            val adRequest =o
 //                AdRequest.Builder().addTestDevice("ABEBCC8921F3ABA283C084A2954D0CAE").build()
             val adRequest = AdRequest.Builder().build()
             adView.loadAd(adRequest)
@@ -161,9 +159,32 @@ class AdvertiseManager(private val activity: MainActivityV2) {
                 adUnitId = "ca-app-pub-8549606613390169/5837153647"
                 loadAd(AdRequest.Builder().build())
                 adListener = object : AdListener() {
+
                     override fun onAdClosed() {
                         super.onAdClosed()
                         shareDialog()
+                        shareAdView.loadAd(AdRequest.Builder().build())
+                    }
+                }
+            }
+            meerkatAdView = InterstitialAd(this).apply {
+                adUnitId = ""
+                loadAd(AdRequest.Builder().build())
+                adListener = object : AdListener() {
+
+                    override fun onAdClosed() {
+                        super.onAdClosed()
+                        meerkatAdView.loadAd(AdRequest.Builder().build())
+                        val pref = application.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+                        val key = pref.getString("key", "")
+                        Log.d(TAG, "onRewarded me:${activity.me}, key:$key")
+                        activity.me?.let {
+                            var point = if (it.point == null) 0 else it.point
+                            point += 50
+                            FirebaseDatabase.getInstance().reference.child("users").child(key)
+                                .child("point").setValue(point)
+                        }
+                        Toast.makeText(this@run, "5점이 추가되었습니다!", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
