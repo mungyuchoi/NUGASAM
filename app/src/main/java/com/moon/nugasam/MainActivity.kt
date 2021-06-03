@@ -223,7 +223,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun initAds() {
         MobileAds.initialize(this, "ca-app-pub-8549606613390169~4634260996")
 
-        mAdView = findViewById(R.id.adView)
+//        mAdView = findViewById(R.id.adView)
 //        val adRequest = AdRequest.Builder().addTestDevice("ABEBCC8921F3ABA283C084A2954D0CAE").build()
         val adRequest = AdRequest.Builder().build()
         mAdView.loadAd(adRequest)

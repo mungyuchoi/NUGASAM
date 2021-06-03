@@ -8,6 +8,9 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.InterstitialAd
@@ -23,24 +26,76 @@ import com.moon.nugasam.constant.PrefConstants
 
 class AdvertiseManager(private val activity: MainActivityV2) {
     fun initialize() {
-        MobileAds.initialize(activity, "ca-app-pub-8549606613390169~4634260996")
+        initKakao()
 
 
-        val pref = activity.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
-        val adOrder = pref.getBoolean(PrefConstants.AD_ORDER, false)
-        initBottom()
+//        MobileAds.initialize(activity, "ca-app-pub-8549606613390169~4634260996")
+//        val pref = activity.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+//        val adOrder = pref.getBoolean(PrefConstants.AD_ORDER, false)
+//        initBottom()
 
 //        initRewardsVideo()
-        initShareAd()
+//        initShareAd()
     }
+
+    private fun initKakao() {
+        activity.run{
+            kakaoAdView = findViewById(R.id.ad_view)
+            kakaoAdView.run {
+                setClientId("DAN-nIoytr5dxNrSDdlY")
+                setAdListener(object: com.kakao.adfit.ads.AdListener  {
+                    override fun onAdLoaded() {
+                        Log.d(TAG, "kakao onAdLoaded")
+                    }
+
+                    override fun onAdFailed(p0: Int) {
+                        Log.d(TAG, "kakao onAdFailed error:$p0")
+                    }
+
+                    override fun onAdClicked() {
+                        Log.d(TAG, "kakao onAdClicked")
+                        val pref = application.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+                        val key = pref.getString("key", "")
+                        Log.d(TAG, "kakao me:${activity.me}, key:$key")
+                        activity.me?.let {
+                            var point = if (it.point == null) 0 else it.point
+                            point += 2
+                            FirebaseDatabase.getInstance().reference.child("users").child(key)
+                                .child("point").setValue(point)
+                        }
+                        Toast.makeText(applicationContext, "2점이 추가되었습니다!", Toast.LENGTH_SHORT).show()
+                    }
+
+                })
+                loadAd()
+            }
+            lifecycle.addObserver(object : LifecycleObserver {
+                @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+                fun onResume() {
+                    kakaoAdView.resume()
+                }
+
+                @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+                fun onPause() {
+                    kakaoAdView.pause()
+                }
+
+                @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+                fun onDestroy() {
+                    kakaoAdView.destroy()
+                }
+            })
+        }
+    }
+
 
     private fun initBottom() {
         activity.run {
-            adView = findViewById(R.id.adView)
+//            adView = findViewById(R.id.adView)
             adView.visibility = View.VISIBLE
-//            val adRequest =o
-//                AdRequest.Builder().addTestDevice("ABEBCC8921F3ABA283C084A2954D0CAE").build()
-            val adRequest = AdRequest.Builder().build()
+            val adRequest =
+                AdRequest.Builder().addTestDevice("ABEBCC8921F3ABA283C084A2954D0CAE").build()
+//            val adRequest = AdRequest.Builder().build()
             adView.loadAd(adRequest)
             adView.adListener = (object : AdListener() {
 

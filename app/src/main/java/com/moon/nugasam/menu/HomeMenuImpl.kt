@@ -20,6 +20,7 @@ import com.kongzue.dialog.v2.SelectDialog
 import com.moon.nugasam.*
 import com.moon.nugasam.MainActivityV2.Companion.SEGMENT_INVITE
 import com.moon.nugasam.R
+import com.moon.nugasam.ad.AdActivity
 import com.moon.nugasam.constant.PrefConstants
 import com.moon.nugasam.data.History
 import com.moon.nugasam.data.SimpleUser
@@ -132,11 +133,22 @@ class HomeMenuImpl(private val activity: MainActivityV2) : IMeerkatMenu {
                 return true
             }
             R.id.action_meerkat -> {
-                if (activity.meerkatAdView.isLoaded) {
-                    activity.meerkatAdView.show()
-                } else {
-                    Toast.makeText(activity, "광고준비가 아직 안되었습니다.", Toast.LENGTH_SHORT).show()
+                val pref = activity.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+                val key = pref.getString("key", "")
+                Log.d(AdActivity.TAG, "kakao me:${activity.me}, key:$key")
+                activity.me?.let {
+                    var point = if (it.point == null) 0 else it.point
+                    point += 5
+                    FirebaseDatabase.getInstance().reference.child("users").child(key)
+                        .child("point").setValue(point)
                 }
+                Toast.makeText(activity, "5점이 추가되었습니다!", Toast.LENGTH_SHORT).show()
+                activity.startActivity(Intent(activity, AdActivity::class.java))
+//                if (activity.meerkatAdView.isLoaded) {
+//                    activity.meerkatAdView.show()
+//                } else {
+//                    Toast.makeText(activity, "광고준비가 아직 안되었습니다.", Toast.LENGTH_SHORT).show()
+//                }
                 return true
             }
             R.id.item_done -> {

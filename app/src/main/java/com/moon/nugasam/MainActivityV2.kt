@@ -39,6 +39,7 @@ import com.google.firebase.database.*
 import com.google.firebase.dynamiclinks.ktx.dynamicLinks
 import com.google.firebase.ktx.Firebase
 import com.infideap.drawerbehavior.AdvanceDrawerLayout
+import com.kakao.adfit.ads.ba.BannerAdView
 import com.kongzue.dialog.v2.InputDialog
 import com.kongzue.dialog.v2.SelectDialog
 import com.moon.nugasam.MainActivityV2.Companion.RC_SIGN_IN
@@ -79,6 +80,7 @@ class MainActivityV2 : AppCompatActivity() {
     var selectionList = ArrayList<User>()
     var isInActionMode = false
 
+    lateinit var kakaoAdView: BannerAdView
     lateinit var adView: AdView
     lateinit var rewardedVideoAd: RewardedVideoAd
     lateinit var shareAdView: InterstitialAd
