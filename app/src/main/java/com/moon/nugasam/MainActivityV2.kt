@@ -783,7 +783,7 @@ class MeerkatViewModel(private val application: Application, activity: AppCompat
         val client = GoogleSignIn.getClient(application, gso)
         auth = FirebaseAuth.getInstance().apply {
             if (currentUser == null) {
-                activity.startActivityForResult(client.signInIntent, RC_SIGN_IN)
+                //activity.startActivityForResult(client.signInIntent, RC_SIGN_IN)
             } else {
                 val authName = auth?.currentUser?.displayName
                 val pref = activity.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
