@@ -14,8 +14,8 @@ android {
         applicationId "com.moon.nugasam"
         minSdkVersion 24
         targetSdkVersion 29
-        versionCode 37
-        versionName "1.37"
+        versionCode 38
+        versionName "1.38"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         renderscriptTargetApi 19
