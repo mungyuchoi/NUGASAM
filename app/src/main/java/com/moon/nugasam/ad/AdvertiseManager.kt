@@ -26,16 +26,15 @@ import com.moon.nugasam.constant.PrefConstants
 
 class AdvertiseManager(private val activity: MainActivityV2) {
     fun initialize() {
-        initKakao()
+//        initKakao()
 
-
-//        MobileAds.initialize(activity, "ca-app-pub-8549606613390169~4634260996")
-//        val pref = activity.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
-//        val adOrder = pref.getBoolean(PrefConstants.AD_ORDER, false)
-//        initBottom()
+        MobileAds.initialize(activity, "ca-app-pub-8549606613390169~4634260996")
+        val pref = activity.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
+        val adOrder = pref.getBoolean(PrefConstants.AD_ORDER, false)
+        initBottom()
 
 //        initRewardsVideo()
-//        initShareAd()
+        initShareAd()
     }
 
     private fun initKakao() {
@@ -91,11 +90,10 @@ class AdvertiseManager(private val activity: MainActivityV2) {
 
     private fun initBottom() {
         activity.run {
-//            adView = findViewById(R.id.adView)
-            adView.visibility = View.VISIBLE
-            val adRequest =
-                AdRequest.Builder().addTestDevice("ABEBCC8921F3ABA283C084A2954D0CAE").build()
-//            val adRequest = AdRequest.Builder().build()
+            adView = findViewById(R.id.adView)
+//            val adRequest =
+//                AdRequest.Builder().addTestDevice("ABEBCC8921F3ABA283C084A2954D0CAE").build()
+            val adRequest = AdRequest.Builder().build()
             adView.loadAd(adRequest)
             adView.adListener = (object : AdListener() {
 
@@ -129,21 +127,21 @@ class AdvertiseManager(private val activity: MainActivityV2) {
     }
 
     private fun initCoupang() {
-        val webView: WebView = activity.findViewById(R.id.webView)
-        webView.visibility = View.VISIBLE
-        webView.settings.javaScriptEnabled = true
-
-        webView.webViewClient = object : WebViewClient() {
-            override fun shouldOverrideUrlLoading(
-                view: WebView,
-                request: WebResourceRequest
-            ): Boolean {
-                val intent = Intent(Intent.ACTION_VIEW, request.url)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                activity.startActivity(intent)
-                return true
-            }
-        }
+//        val webView: WebView = activity.findViewById(R.id.webView)
+//        webView.visibility = View.VISIBLE
+//        webView.settings.javaScriptEnabled = true
+//
+//        webView.webViewClient = object : WebViewClient() {
+//            override fun shouldOverrideUrlLoading(
+//                view: WebView,
+//                request: WebResourceRequest
+//            ): Boolean {
+//                val intent = Intent(Intent.ACTION_VIEW, request.url)
+//                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+//                activity.startActivity(intent)
+//                return true
+//            }
+//        }
 
         val html = """<div style="height: 60px">
 				<script src="https://ads-partners.coupang.com/g.js"></script>
@@ -153,7 +151,7 @@ class AdvertiseManager(private val activity: MainActivityV2) {
 					});
 				</script>		
 		</div>"""
-        webView.loadData(html, "text/html", "UTF8")
+//        webView.loadData(html, "text/html", "UTF8")
         val pref = activity.getSharedPreferences("NUGASAM", Context.MODE_PRIVATE)
         pref.edit().putBoolean(PrefConstants.AD_ORDER, true).commit()
     }
